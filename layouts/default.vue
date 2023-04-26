@@ -27,9 +27,9 @@ useHead({
 <style>
 body {
     margin: 0;
-    background: #ECDAC1;
+    background: #2C2137;
     font-size: 16px;
-    color: #543F40;
+    color: #EDB4A1;
     font-family: Montserrat;
 }
 
