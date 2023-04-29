@@ -8,14 +8,16 @@ const epilepsyToggle = ref(false);
 const visuallyImpairedToggle = ref(false);
 const dyslexiaToggle = ref(false);
 const adhdToggle = ref(false);
+const user = ref("professor");
 
 function onSettingChange() {
-    console.log("Language:", language.value);
+    console.log("\nLanguage:", language.value);
     console.log("Font:", fontMultiplier.value);
     console.log("Epilepsy:", epilepsyToggle.value);
     console.log("Vision:", visuallyImpairedToggle.value);
     console.log("Dyslexia:", dyslexiaToggle.value);
     console.log("ADHD:", adhdToggle.value);
+    console.log("User:", user.value);
 }
 </script>
 <template>
@@ -34,20 +36,39 @@ function onSettingChange() {
                 </div>
 
                 <div class="w-full flex flex-row mb-3">
-                    <input v-model="fontMultiplier" id="large-range" type="range" min="1" max="2" step="0.01" class="w-[210px] my-auto h-6 bg-[#C9304F] rounded-full appearance-none cursor-pointer accent-white">
+                    <input v-model="fontMultiplier" id="large-range" type="range" min="1" max="2" step="0.01" class="w-[210px] my-auto h-6 bg-[#C9304F] rounded-full appearance-none cursor-pointer accent-white" @change="onSettingChange()">
                     <p class="my-auto ml-3">Размер шрифта</p>
                 </div>
 
                 <div class="w-full h-0 border border-[#764462] mb-7"></div>
 
-                <my-toggle v-model="epilepsyToggle">Профиль для людей с эпилепсией</my-toggle>
+                <my-toggle v-model="epilepsyToggle" @change="onSettingChange()">Профиль для людей с эпилепсией</my-toggle>
                 <p class="text-gray-300 text-xs pl-14 mb-5">Смягчает цвета</p>
-                <my-toggle v-model="visuallyImpairedToggle">Профиль для слабовидящих</my-toggle>
+                <my-toggle v-model="visuallyImpairedToggle" @change="onSettingChange()">Профиль для слабовидящих</my-toggle>
                 <p class="text-gray-300 text-xs pl-14 mb-5">Увеличивает контраст</p>
-                <my-toggle v-model="dyslexiaToggle">Профиль для людей с дислексией</my-toggle>
+                <my-toggle v-model="dyslexiaToggle" @change="onSettingChange()">Профиль для людей с дислексией</my-toggle>
                 <p class="text-gray-300 text-xs pl-14 mb-5">Меняет шрифт на более дружелюбный</p>
-                <my-toggle v-model="adhdToggle">Профиль для людей с СДВГ</my-toggle>
+                <my-toggle v-model="adhdToggle" @change="onSettingChange()">Профиль для людей с СДВГ</my-toggle>
                 <p class="text-gray-300 text-xs pl-14 mb-5">Меньше отвлекающих вещей</p>
+
+                <div class="w-full h-0 border border-[#764462] mb-7"></div>
+
+                <input type="radio" value="professor" v-model="user" class="w-4 h-4 ring-offset-gray-800 bg-gray-700 border-gray-600 accent-[#C9304F]" @change="onSettingChange()">
+                <label class="ml-3">Я преподаватель</label>
+                <br>
+                <input type="radio" value="student" v-model="user" class="w-4 h-4 ring-offset-gray-800 bg-gray-700 border-gray-600 accent-[#C9304F]" @change="onSettingChange()">
+                <label class="ml-3">Я студент</label>
+
+                <div class="w-full h-0 border border-[#764462] mb-7 mt-1"></div>
+
+                <div v-if="user==='professor'">
+                    <label for="first_name" class="block mb-2 text-sm font-medium">ФИО:</label>
+                    <input type="text" id="first_name" class="text-sm rounded-lg block w-full p-2.5 bg-[#764462] placeholder-gray-400" placeholder="Коган Ю.Г.">
+                </div>
+                <div v-else>
+                    <label for="first_name" class="block mb-2 text-sm font-medium">Группа:</label>
+                    <input type="text" id="first_name" class="text-sm rounded-lg block w-full p-2.5 bg-[#764462] placeholder-gray-400" placeholder="ИДБ-19-03">
+                </div>
             </div>
         </div>
         <Navbar />

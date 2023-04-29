@@ -1,9 +1,4 @@
 <script setup>
-// const props = defineProps(["modelValue"]);
-// const data = defineModel(props, 'modelValue');
-
-// defineProps(['modelValue']);
-// defineEmits(['update:modelValue']);  //:value="modelValue" @input="$emit('update:modelValue', $event)"
 import { computed } from 'vue'
 
 const props = defineProps(["modelValue"]);
@@ -16,7 +11,7 @@ const value = computed({
     set(value) {
         emit('update:modelValue', value)
     }
-})
+});
 </script>
 <template>
     <label class="relative inline-flex items-center cursor-pointer">

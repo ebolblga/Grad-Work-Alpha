@@ -231,7 +231,7 @@ async function findContours() {
       <input aria-label="Input for images to process"
         class="h-7 block w-full text-sm text-gray-400 rounded-lg cursor-pointer focus:outline-none bg-[#764462] placeholder-gray-400"
         type="file" accept=".png, .jpg" @change="UploadImg($event)" />
-      <img :src="src" v-if="src" class="h-[calc(100%-7px)] w-full object-contain" style="image-rendering: pixelated" />
+      <img :src="src" v-if="src" class="h-[calc(100%-7px)] w-full object-contain" />
     </div>
     <Navbar />
   </div>
