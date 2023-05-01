@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf";
 import "pdfjs-dist/build/pdf.worker.entry";
+import { formToJSON } from "axios";
 
 useHead({ title: "Сканировать из PDF" });
 
@@ -40,7 +41,7 @@ async function pdfUploaded(event: Event) {
         // });
         // pdfJson.value = content.items.map((item) => item.str).join("\n");
         for (let i = 0; i < content.items.length; i++) {
-            console.log(content.items[i].str, Math.round(content.items[i].transform[4]), Math.round(content.items[i].transform[5]));
+            // console.log(content.items[i].str, Math.round(content.items[i].transform[4]), Math.round(content.items[i].transform[5]));
 
             if (content.items[i].str === ' ' || content.items[i].transform[5] > 511) continue;
 
@@ -118,9 +119,61 @@ async function pdfUploaded(event: Event) {
                 timedItems.value[7] += content.items[i].str;
             }
         }
+        console.log(parseDataProf(timedItems.value));
         // console.log(timedItems.value);
     };
     reader.readAsArrayBuffer(file);
+}
+
+class Subject {
+    groups: string[];
+    name: string;
+    type: string;
+    subgroup: string;
+    location: string;
+    dates: string;
+
+    constructor(groups: string[], name: string, type: string, subgroup: string, location: string, dates: string) {
+        this.groups = groups;
+        this.name = name;
+        this.type = type;
+        this.subgroup = subgroup;
+        this.location = location;
+        this.dates = dates;
+    }
+}
+
+function parseDataProf(subjects: string[]) {
+    for (let i = 0; i < 8; i++) {
+        const subjectArray: string[] = subjects[i].split(']');
+        if (subjectArray.length <= 1) continue;
+        
+        for (let j = 0; j < subjectArray.length - 1; j++) {
+            subjectArray[j] += ']';
+            const strArray: string[] = subjectArray[j].split('.');
+
+            let n = 0;
+            const groups = strArray[0].split(',');
+            const name = strArray[1];
+            const type = strArray[2];
+            let subgroup = "";
+            if (type.includes("лабораторные занятия")) {
+                subgroup = strArray[n + 3];
+                n++;
+            }
+            
+            const location = strArray[n + 3].replace(" ", "");
+            let dates = strArray[n + 4] + '.';
+            for (let p = n + 5; p < strArray.length; p++) {
+                dates += strArray[p] + '.';
+            }
+
+            const subject = new Subject(groups, name, type, subgroup.replace(" ", ""), location, dates.slice(0, -1));
+            console.log(subject);
+        }
+    }
+
+    return "Done";
 }
 </script>
 <template>
