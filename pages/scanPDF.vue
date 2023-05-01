@@ -17,12 +17,14 @@ const timedItems = ref([
     ""
 ]);
 const treshold = 2;
+const subjectsArray = ref<Subject[]>([]);   //: Ref<Subject[]> 
 
 async function pdfUploaded(event: Event) {
 
     for (let i = 0; i < 8; i++) {
         timedItems.value[i] = "";
     }
+    subjectsArray.value = [];
     
     const file = event.target.files[0];
     const reader = new FileReader();
@@ -132,16 +134,29 @@ class Subject {
     subgroup: string;
     location: string;
     dates: string;
+    time: number;
 
-    constructor(groups: string[], name: string, type: string, subgroup: string, location: string, dates: string) {
+    constructor(groups: string[], name: string, type: string, subgroup: string, location: string, dates: string, time: number) {
         this.groups = groups;
         this.name = name;
         this.type = type;
         this.subgroup = subgroup;
         this.location = location;
         this.dates = dates;
+        this.time = time;
     }
 }
+
+const timeMap = new Map([
+    [1, "8:30 - 10:10"],
+    [2, "10:20 - 12:00"],
+    [3, "12:20 - 14:00"],
+    [4, "14:10 - 15:50"],
+    [5, "16:00 - 17:40"],
+    [6, "18:00 - 19:30"],
+    [7, "19:40 - 21:10"],
+    [8, "21:20 - 22:50"],
+])
 
 function parseDataProf(subjects: string[]) {
     for (let i = 0; i < 8; i++) {
@@ -168,11 +183,13 @@ function parseDataProf(subjects: string[]) {
                 dates += strArray[p] + '.';
             }
 
-            const subject = new Subject(groups, name, type, subgroup.replace(" ", ""), location, dates.slice(0, -1));
-            console.log(subject);
+            const subject = new Subject(groups, name, type, subgroup.replace(" ", ""), location, dates.slice(0, -1), i);
+            subjectsArray.value.push(subject);
+            // console.log(subject);
         }
     }
-
+    
+    // console.log(subjectsArray.value);
     return "Done";
 }
 </script>
@@ -187,13 +204,40 @@ function parseDataProf(subjects: string[]) {
                     accept=".pdf"
                     @change="pdfUploaded($event)"
                 />
-                <!-- <p>{{ pdfJson }}</p> -->
-                <div v-for="(item, i) in timedItems">
-                    <p class="text-green-500">{{i}}</p>
-                    <p>{{item}}</p>
+                <div class="overflow-auto h-[75vh] w-full scrollbar">
+                    <div v-for="(item, i) in subjectsArray" class="w-full bg-[#764462] rounded-lg mb-3 p-3 overflow-hidden">
+                        <p class="text-sm text-[#C69787] inline">{{ item.groups.join(", ") }}</p>
+                        <p class="text-sm text-[#C69787] inline">{{ ' ' + item.subgroup }}</p>
+                        <p class="font-medium italic">{{ item.name }}</p>
+                        <p class="text-sm"
+                        :class="{ 'text-[#8CC487]': item.type.includes('лекции'),
+                        'text-[#9b8fcf]': item.type.includes('семинар'),
+                        'text-[#ccc46f]': item.type.includes('лабораторные занятия') }">{{ item.type }}</p>
+                        <p class="text-sm text-[#C69787] inline">{{ timeMap.get(item.time) }}</p>
+                        <p class="text-sm text-[#C69787] inline">{{ ' ' + item.dates }}</p>
+                        <p class="text-sm text-right text-[#C69787]">{{ item.location }}</p>
+                    </div>
                 </div>
             </div>
         </div>
         <Navbar />
     </div>
 </template>
+<style>
+.scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.scrollbar::-webkit-scrollbar-track {
+  box-shadow: transparent;
+}
+ 
+.scrollbar::-webkit-scrollbar-thumb {
+  background-color: darkgrey;
+  outline: 1px solid slategrey;
+  border-radius: 4px;
+}
+.scrollbar::-webkit-scrollbar-corner {
+    background: transparent;
+}
+</style>
