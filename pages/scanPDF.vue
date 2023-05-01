@@ -5,11 +5,27 @@ import "pdfjs-dist/build/pdf.worker.entry";
 useHead({ title: "Сканировать из PDF" });
 
 const pdfJson = ref("");
+const timedItems = ref([
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    ""
+]);
+const treshold = 2;
 
-async function pdfUploaded(event: any) {
+async function pdfUploaded(event: Event) {
+
+    for (let i = 0; i < 8; i++) {
+        timedItems.value[i] = "";
+    }
+    
     const file = event.target.files[0];
     const reader = new FileReader();
-    reader.onload = async (event: any) => {
+    reader.onload = async (event: Event) => {
         const typedarray = new Uint8Array(event.target.result);
         const pdf = await pdfjsLib.getDocument(typedarray).promise;
         const page = await pdf.getPage(1);
@@ -18,10 +34,91 @@ async function pdfUploaded(event: any) {
         // console.log(
         //     content.items.map((item) => item.str + " " + item.transform).join("\n")
         // );
-        content.items.map((item) => {
-            console.log(item.str, item.transform);
-        });
-        pdfJson.value = content.items.map((item) => item.str).join("\n");
+
+        // content.items.map((item) => {
+        //     console.log(item.str, Math.round(item.transform[4]), Math.round(item.transform[5]));
+        // });
+        // pdfJson.value = content.items.map((item) => item.str).join("\n");
+        for (let i = 0; i < content.items.length; i++) {
+            console.log(content.items[i].str, Math.round(content.items[i].transform[4]), Math.round(content.items[i].transform[5]));
+
+            if (content.items[i].str === ' ' || content.items[i].transform[5] > 511) continue;
+
+            if (content.items[i].transform[4] > 46 - treshold && content.items[i].transform[4] < 140 - treshold) {
+                timedItems.value[0] += content.items[i].str;
+                i++;
+                while (!content.items[i].str.includes(']')) {
+                    timedItems.value[0] += content.items[i].str;
+                    i++;
+                }
+
+                timedItems.value[0] += ']';
+            } else if (content.items[i].transform[4] > 140 - treshold && content.items[i].transform[4] < 234 - treshold) {
+                timedItems.value[1] += content.items[i].str;
+                i++;
+                while (!content.items[i].str.includes(']')) {
+                    timedItems.value[1] += content.items[i].str;
+                    i++;
+                }
+
+                timedItems.value[1] += ']';
+            } else if (content.items[i].transform[4] > 234 - treshold && content.items[i].transform[4] < 327 - treshold) {
+                timedItems.value[2] += content.items[i].str;
+                i++;
+                while (!content.items[i].str.includes(']')) {
+                    timedItems.value[2] += content.items[i].str;
+                    i++;
+                }
+
+                timedItems.value[2] += content.items[i].str;
+            } else if (content.items[i].transform[4] > 327 - treshold && content.items[i].transform[4] < 421 - treshold) {
+                timedItems.value[3] += content.items[i].str;
+                i++;
+                while (!content.items[i].str.includes(']')) {
+                    timedItems.value[3] += content.items[i].str;
+                    i++;
+                }
+
+                timedItems.value[3] += content.items[i].str;
+            } else if (content.items[i].transform[4] > 421 - treshold && content.items[i].transform[4] < 514 - treshold) {
+                timedItems.value[4] += content.items[i].str;
+                i++;
+                while (!content.items[i].str.includes(']')) {
+                    timedItems.value[4] += content.items[i].str;
+                    i++;
+                }
+
+                timedItems.value[4] += content.items[i].str;
+            } else if (content.items[i].transform[4] > 514 - treshold && content.items[i].transform[4] < 608 - treshold) {
+                timedItems.value[5] += content.items[i].str;
+                i++;
+                while (!content.items[i].str.includes(']')) {
+                    timedItems.value[5] += content.items[i].str;
+                    i++;
+                }
+
+                timedItems.value[5] += content.items[i].str;
+            } else if (content.items[i].transform[4] > 608 - treshold && content.items[i].transform[4] < 702 - treshold) {
+                timedItems.value[6] += content.items[i].str;
+                i++;
+                while (!content.items[i].str.includes(']')) {
+                    timedItems.value[6] += content.items[i].str;
+                    i++;
+                }
+
+                timedItems.value[6] += content.items[i].str;
+            } else if (content.items[i].transform[4] > 702 - treshold && content.items[i].transform[4] < 796 - treshold) {
+                timedItems.value[7] += content.items[i].str;
+                i++;
+                while (!content.items[i].str.includes(']')) {
+                    timedItems.value[7] += content.items[i].str;
+                    i++;
+                }
+
+                timedItems.value[7] += content.items[i].str;
+            }
+        }
+        // console.log(timedItems.value);
     };
     reader.readAsArrayBuffer(file);
 }
@@ -37,7 +134,11 @@ async function pdfUploaded(event: any) {
                     accept=".pdf"
                     @change="pdfUploaded($event)"
                 />
-                <p>{{ pdfJson }}</p>
+                <!-- <p>{{ pdfJson }}</p> -->
+                <div v-for="(item, i) in timedItems">
+                    <p class="text-green-500">{{i}}</p>
+                    <p>{{item}}</p>
+                </div>
             </div>
         </div>
         <Navbar />
