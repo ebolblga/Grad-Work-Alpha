@@ -37,4 +37,21 @@ body {
   font-family: 'Montserrat';
   src: url('/tf2build.ttf');
 } */
+
+.scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.scrollbar::-webkit-scrollbar-track {
+  box-shadow: transparent;
+}
+ 
+.scrollbar::-webkit-scrollbar-thumb {
+  background-color: darkgrey;
+  outline: 1px solid slategrey;
+  border-radius: 4px;
+}
+.scrollbar::-webkit-scrollbar-corner {
+    background: transparent;
+}
 </style>

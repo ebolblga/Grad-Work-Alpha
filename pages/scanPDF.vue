@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf";
 import "pdfjs-dist/build/pdf.worker.entry";
-import { formToJSON } from "axios";
 
 useHead({ title: "Сканировать из PDF" });
 
@@ -33,18 +32,8 @@ async function pdfUploaded(event: Event) {
         const pdf = await pdfjsLib.getDocument(typedarray).promise;
         const page = await pdf.getPage(1);
         const content = await page.getTextContent();
-        // console.log(`Content:`);
-        // console.log(
-        //     content.items.map((item) => item.str + " " + item.transform).join("\n")
-        // );
-
-        // content.items.map((item) => {
-        //     console.log(item.str, Math.round(item.transform[4]), Math.round(item.transform[5]));
-        // });
-        // pdfJson.value = content.items.map((item) => item.str).join("\n");
-        // console.log(content.items.map((item) => item.str).join(""));
+        
         for (let i = 0; i < content.items.length; i++) {
-            // console.log(content.items[i].str, Math.round(content.items[i].transform[4]), Math.round(content.items[i].transform[5]));
 
             if (content.items[i].str === ' ' || content.items[i].transform[5] > 511) continue;
 
@@ -122,7 +111,10 @@ async function pdfUploaded(event: Event) {
                 timedItems.value[7] += content.items[i].str;
             }
         }
-        console.log(parseDataProf(timedItems.value));
+
+        parseDataProf(timedItems.value);
+        // console.log(JSON.stringify(subjectsArray.value));
+        localStorage.setItem('subjectsJSON', JSON.stringify(subjectsArray.value));
         // console.log(timedItems.value);
     };
     reader.readAsArrayBuffer(file);
@@ -134,10 +126,10 @@ class Subject {
     type: string;
     subgroup: string;
     location: string;
-    dates: string;
+    dates: string[];
     time: number;
 
-    constructor(groups: string[], name: string, type: string, subgroup: string, location: string, dates: string, time: number) {
+    constructor(groups: string[], name: string, type: string, subgroup: string, location: string, dates: string[], time: number) {
         this.groups = groups;
         this.name = name;
         this.type = type;
@@ -184,14 +176,47 @@ function parseDataProf(subjects: string[]) {
                 dates += strArray[p] + '.';
             }
 
-            const subject = new Subject(groups, name, type, subgroup.replace(" ", ""), location, dates.slice(0, -1), i);
+            const subject = new Subject(groups, name, type, subgroup.replace(" ", ""), location, parseDates(dates.slice(0, -1)), i);
             subjectsArray.value.push(subject);
             // console.log(subject);
         }
     }
     
     // console.log(subjectsArray.value);
-    return "Done";
+}
+
+function parseDates(dates: string) {
+    const tmpArray: string[] = dates.replace(/(к.н.)|(ч.н.)|[\[\] ]/g, '').split(',');
+    let dateArray: string[] = [];
+    let n = 7;
+    if (dates.includes("ч.н.")) {
+        n = 14;
+    }
+
+    for(let i = 0; i < tmpArray.length; i++) {
+        if (tmpArray[i].includes('-')) {
+            const [start, end]: string[] = tmpArray[i].split('-');
+            let newDate = dateParser(start);
+            const endDate = dateParser(end);
+
+            while(newDate <= endDate) {
+                dateArray.push(newDate.toISOString());
+                newDate.setDate(newDate.getDate() + n);
+            }
+
+        } else {
+            dateArray.push(dateParser(tmpArray[i]).toISOString());
+        }
+    }
+
+    // console.log(dates, dateArray);
+    return dateArray;
+}
+
+function dateParser(date: string) {
+    const [day, month] = date.split('.');
+    const year = new Date().getFullYear();
+    return new Date(year, parseInt(month, 10) - 1, parseInt(day, 10));
 }
 </script>
 <template>
@@ -215,7 +240,7 @@ function parseDataProf(subjects: string[]) {
                         'text-[#9b8fcf]': item.type.includes('семинар'),
                         'text-[#ccc46f]': item.type.includes('лабораторные занятия') }">{{ item.type }}</p>
                         <p class="text-sm text-[#C69787] inline">{{ timeMap.get(item.time) }}</p>
-                        <p class="text-sm text-[#C69787] inline">{{ ' ' + item.dates }}</p>
+                        <!-- <p class="text-sm text-[#C69787] inline">{{ ' ' + item.dates.join(", ") }}</p> -->
                         <p class="text-sm text-right text-[#C69787]">{{ item.location }}</p>
                     </div>
                 </div>
@@ -224,21 +249,3 @@ function parseDataProf(subjects: string[]) {
         <Navbar />
     </div>
 </template>
-<style>
-.scrollbar::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-.scrollbar::-webkit-scrollbar-track {
-  box-shadow: transparent;
-}
- 
-.scrollbar::-webkit-scrollbar-thumb {
-  background-color: darkgrey;
-  outline: 1px solid slategrey;
-  border-radius: 4px;
-}
-.scrollbar::-webkit-scrollbar-corner {
-    background: transparent;
-}
-</style>
