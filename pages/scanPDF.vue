@@ -42,6 +42,7 @@ async function pdfUploaded(event: Event) {
         //     console.log(item.str, Math.round(item.transform[4]), Math.round(item.transform[5]));
         // });
         // pdfJson.value = content.items.map((item) => item.str).join("\n");
+        // console.log(content.items.map((item) => item.str).join(""));
         for (let i = 0; i < content.items.length; i++) {
             // console.log(content.items[i].str, Math.round(content.items[i].transform[4]), Math.round(content.items[i].transform[5]));
 

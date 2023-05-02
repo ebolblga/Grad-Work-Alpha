@@ -16,9 +16,11 @@
   "dependencies": {
     "@nuxtjs/tailwindcss": "^6.3.0",
     "@paddlejs-models/ocr": "^1.2.3",
+    "@popperjs/core": "^2.11.7",
     "@techstark/opencv-js": "^4.7.0-release.1",
     "axios": "^1.2.6",
     "pdfjs-dist": "^3.5.141",
-    "tesseract.js": "^4.0.2"
+    "tesseract.js": "^4.0.2",
+    "v-calendar": "^3.0.3"
   }
 }
