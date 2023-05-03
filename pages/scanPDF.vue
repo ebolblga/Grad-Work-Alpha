@@ -4,7 +4,6 @@ import "pdfjs-dist/build/pdf.worker.entry";
 
 useHead({ title: "Сканировать из PDF" });
 
-const pdfJson = ref("");
 const timedItems = ref([
     "",
     "",
@@ -15,8 +14,42 @@ const timedItems = ref([
     "",
     ""
 ]);
+
+const user = localStorage.getItem('user') || "professor";
 const treshold = 2;
-const subjectsArray = ref<Subject[]>([]);   //: Ref<Subject[]> 
+const subjectsArray = ref<Subject[]>([]);
+class Subject {
+    groups: string[];
+    name: string;
+    type: string;
+    subgroup: string;
+    location: string;
+    dateStr: string;
+    dates: string[];
+    time: number;
+
+    constructor(groups: string[], name: string, type: string, subgroup: string, location: string, dateStr: string, dates: string[], time: number) {
+        this.groups = groups;
+        this.name = name;
+        this.type = type;
+        this.subgroup = subgroup;
+        this.location = location;
+        this.dateStr = dateStr;
+        this.dates = dates;
+        this.time = time;
+    }
+};
+
+const timeMap = new Map([
+    [0, "8:30 - 10:10"],
+    [1, "10:20 - 12:00"],
+    [2, "12:20 - 14:00"],
+    [3, "14:10 - 15:50"],
+    [4, "16:00 - 17:40"],
+    [5, "18:00 - 19:30"],
+    [6, "19:40 - 21:10"],
+    [7, "21:20 - 22:50"],
+]);
 
 async function pdfUploaded(event: Event) {
 
@@ -32,10 +65,14 @@ async function pdfUploaded(event: Event) {
         const pdf = await pdfjsLib.getDocument(typedarray).promise;
         const page = await pdf.getPage(1);
         const content = await page.getTextContent();
+
+        // console.log(
+        //     content.items.map((item) => item.str).join("")
+        // );
         
         for (let i = 0; i < content.items.length; i++) {
 
-            if (content.items[i].str === ' ' || content.items[i].transform[5] > 511) continue;
+            if (content.items[i].str === ' ' || content.items[i].transform[5] > 515) continue;
 
             if (content.items[i].transform[4] > 46 - treshold && content.items[i].transform[4] < 140 - treshold) {
                 timedItems.value[0] += content.items[i].str;
@@ -45,7 +82,7 @@ async function pdfUploaded(event: Event) {
                     i++;
                 }
 
-                timedItems.value[0] += ']';
+                timedItems.value[0] += content.items[i].str;
             } else if (content.items[i].transform[4] > 140 - treshold && content.items[i].transform[4] < 234 - treshold) {
                 timedItems.value[1] += content.items[i].str;
                 i++;
@@ -54,7 +91,7 @@ async function pdfUploaded(event: Event) {
                     i++;
                 }
 
-                timedItems.value[1] += ']';
+                timedItems.value[1] += content.items[i].str;
             } else if (content.items[i].transform[4] > 234 - treshold && content.items[i].transform[4] < 327 - treshold) {
                 timedItems.value[2] += content.items[i].str;
                 i++;
@@ -112,46 +149,15 @@ async function pdfUploaded(event: Event) {
             }
         }
 
-        parseDataProf(timedItems.value);
+        parseSubjectData(timedItems.value);
         // console.log(JSON.stringify(subjectsArray.value));
         localStorage.setItem('subjectsJSON', JSON.stringify(subjectsArray.value));
         // console.log(timedItems.value);
     };
     reader.readAsArrayBuffer(file);
-}
+};
 
-class Subject {
-    groups: string[];
-    name: string;
-    type: string;
-    subgroup: string;
-    location: string;
-    dates: string[];
-    time: number;
-
-    constructor(groups: string[], name: string, type: string, subgroup: string, location: string, dates: string[], time: number) {
-        this.groups = groups;
-        this.name = name;
-        this.type = type;
-        this.subgroup = subgroup;
-        this.location = location;
-        this.dates = dates;
-        this.time = time;
-    }
-}
-
-const timeMap = new Map([
-    [1, "8:30 - 10:10"],
-    [2, "10:20 - 12:00"],
-    [3, "12:20 - 14:00"],
-    [4, "14:10 - 15:50"],
-    [5, "16:00 - 17:40"],
-    [6, "18:00 - 19:30"],
-    [7, "19:40 - 21:10"],
-    [8, "21:20 - 22:50"],
-])
-
-function parseDataProf(subjects: string[]) {
+function parseSubjectData(subjects: string[]) {
     for (let i = 0; i < 8; i++) {
         const subjectArray: string[] = subjects[i].split(']');
         if (subjectArray.length <= 1) continue;
@@ -160,24 +166,53 @@ function parseDataProf(subjects: string[]) {
             subjectArray[j] += ']';
             const strArray: string[] = subjectArray[j].split('.');
 
-            let n = 0;
-            const groups = strArray[0].split(',');
-            const name = strArray[1];
-            const type = strArray[2];
-            let subgroup = "";
-            if (type.includes("лабораторные занятия")) {
-                subgroup = strArray[n + 3];
-                n++;
-            }
-            
-            const location = strArray[n + 3].replace(" ", "");
-            let dates = strArray[n + 4] + '.';
-            for (let p = n + 5; p < strArray.length; p++) {
-                dates += strArray[p] + '.';
+            if (user === "professor") {
+                let n = 0;
+                const groups = strArray[0].split(',');
+                const name = strArray[1];
+                const type = strArray[2].replace("лекции", "Лекции").replace("семинар", "Cеминары").replace("лабораторные занятия", "Лабораторные занятия");
+                let subgroup = "";
+                if (type.includes("Лабораторные занятия")) {
+                    if (strArray[3].includes("(А)") || strArray[3].includes("(Б)")) {
+                        subgroup = strArray[3];
+                        n++;
+                    }
+                }
+                
+                const location = strArray[n + 3].replace(" ", "");
+                let dates = strArray[n + 4] + '.';
+                for (let p = n + 5; p < strArray.length; p++) {
+                    dates += strArray[p] + '.';
+                }
+
+                const subject = new Subject(groups, name, type, subgroup.replace(" ", ""), location, dates.slice(0, -1), parseDates(dates.slice(0, -1)), i);
+                subjectsArray.value.push(subject);
+            } else {
+                console.log(strArray)
+                let n = 0;
+                const groups = [strArray[1] + '.' + strArray[2] + '.'];
+                const name = strArray[0];
+                const type = strArray[3].replace(/\s+/g, '').replace("лекции", "Лекции").replace("семинар", "Cеминары").replace("лабораторныезанятия", "Лабораторные занятия");
+                let subgroup = "";
+                if (type.includes("Лабораторные занятия")) {
+                    if (strArray[4].includes("(А)") || strArray[4].includes("(Б)")) {
+                        subgroup = strArray[4];
+                        n++;
+                    }
+                }
+
+                const location = strArray[n + 4].replace(" ", "");
+                let dates = strArray[n + 5] + '.';
+                for (let p = n + 6; p < strArray.length; p++) {
+                    dates += strArray[p] + '.';
+                }
+
+                const subject = new Subject(groups, name, type, subgroup.replace(" ", ""), location, dates.slice(0, -1), parseDates(dates.slice(0, -1)), i);
+                subjectsArray.value.push(subject);
             }
 
-            const subject = new Subject(groups, name, type, subgroup.replace(" ", ""), location, parseDates(dates.slice(0, -1)), i);
-            subjectsArray.value.push(subject);
+
+            
             // console.log(subject);
         }
     }
@@ -186,6 +221,7 @@ function parseDataProf(subjects: string[]) {
 }
 
 function parseDates(dates: string) {
+    // return [dates];
     const tmpArray: string[] = dates.replace(/(к.н.)|(ч.н.)|[\[\] ]/g, '').split(',');
     let dateArray: string[] = [];
     let n = 7;
@@ -236,11 +272,11 @@ function dateParser(date: string) {
                         <p class="text-sm text-[#C69787] inline">{{ ' ' + item.subgroup }}</p>
                         <p class="font-medium italic">{{ item.name }}</p>
                         <p class="text-sm"
-                        :class="{ 'text-[#8CC487]': item.type.includes('лекции'),
-                        'text-[#9b8fcf]': item.type.includes('семинар'),
-                        'text-[#ccc46f]': item.type.includes('лабораторные занятия') }">{{ item.type }}</p>
+                        :class="{ 'text-[#8CC487]': item.type.includes('Лекции'),
+                        'text-[#9b8fcf]': item.type.includes('Cеминары'),
+                        'text-[#ccc46f]': item.type.includes('Лабораторные занятия') }">{{ item.type }}</p>
                         <p class="text-sm text-[#C69787] inline">{{ timeMap.get(item.time) }}</p>
-                        <!-- <p class="text-sm text-[#C69787] inline">{{ ' ' + item.dates.join(", ") }}</p> -->
+                        <p class="text-sm text-[#C69787] inline">{{ item.dateStr }}</p>
                         <p class="text-sm text-right text-[#C69787]">{{ item.location }}</p>
                     </div>
                 </div>
