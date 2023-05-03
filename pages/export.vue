@@ -46,12 +46,17 @@ function exportCSV() {
     ].map(e => e.join(",")).join("\n");
     console.log(dataStr)
 
-    // const downloadAnchorNode = document.createElement('a');
-    // downloadAnchorNode.setAttribute("href", dataStr);
-    // downloadAnchorNode.setAttribute("download", "schedule.txt");
-    // document.body.appendChild(downloadAnchorNode); // required for firefox
-    // downloadAnchorNode.click();
-    // downloadAnchorNode.remove();
+    const blob = new Blob([dataStr], { type: 'text/csv;charset=UTF-8' });
+  
+    const url = window.URL.createObjectURL(blob)
+  
+    const a = document.createElement('a')
+
+    a.setAttribute('href', url)
+  
+    a.setAttribute('download', 'schedule.csv');
+  
+    a.click()
 }
 
 // Downloads subject data in JSON file format
