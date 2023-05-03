@@ -44,7 +44,7 @@ function exportCSV() {
             item.dates.join(' ')
         ])
     ].map(e => e.join(",")).join("\n");
-    console.log(dataStr)
+    // console.log(dataStr)
 
     const blob = new Blob([dataStr], { type: 'text/csv;charset=UTF-8' });
   

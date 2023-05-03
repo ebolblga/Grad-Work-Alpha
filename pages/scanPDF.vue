@@ -76,72 +76,120 @@ async function pdfUploaded(event: Event) {
 
             if (content.items[i].transform[4] > 46 - treshold && content.items[i].transform[4] < 140 - treshold) {
                 timedItems.value[0] += content.items[i].str;
+                let height = content.items[i].transform[5];
                 i++;
                 while (!content.items[i].str.includes(']')) {
+                    if (height > content.items[i].transform[5]) {
+                        timedItems.value[0] += ' ';
+                    }
+
                     timedItems.value[0] += content.items[i].str;
+                    height = content.items[i].transform[5];
                     i++;
                 }
 
                 timedItems.value[0] += content.items[i].str;
             } else if (content.items[i].transform[4] > 140 - treshold && content.items[i].transform[4] < 234 - treshold) {
                 timedItems.value[1] += content.items[i].str;
+                let height = content.items[i].transform[5];
                 i++;
                 while (!content.items[i].str.includes(']')) {
+                    if (height > content.items[i].transform[5]) {
+                        timedItems.value[1] += ' ';
+                    }
+                    
                     timedItems.value[1] += content.items[i].str;
+                    height = content.items[i].transform[5];
                     i++;
                 }
 
                 timedItems.value[1] += content.items[i].str;
             } else if (content.items[i].transform[4] > 234 - treshold && content.items[i].transform[4] < 327 - treshold) {
                 timedItems.value[2] += content.items[i].str;
+                let height = content.items[i].transform[5];
                 i++;
                 while (!content.items[i].str.includes(']')) {
+                    if (height > content.items[i].transform[5]) {
+                        timedItems.value[2] += ' ';
+                    }
+                    
                     timedItems.value[2] += content.items[i].str;
+                    height = content.items[i].transform[5];
                     i++;
                 }
 
                 timedItems.value[2] += content.items[i].str;
             } else if (content.items[i].transform[4] > 327 - treshold && content.items[i].transform[4] < 421 - treshold) {
                 timedItems.value[3] += content.items[i].str;
+                let height = content.items[i].transform[5];
                 i++;
                 while (!content.items[i].str.includes(']')) {
+                    if (height > content.items[i].transform[5]) {
+                        timedItems.value[3] += ' ';
+                    }
+                    
                     timedItems.value[3] += content.items[i].str;
+                    height = content.items[i].transform[5];
                     i++;
                 }
 
                 timedItems.value[3] += content.items[i].str;
             } else if (content.items[i].transform[4] > 421 - treshold && content.items[i].transform[4] < 514 - treshold) {
                 timedItems.value[4] += content.items[i].str;
+                let height = content.items[i].transform[5];
                 i++;
                 while (!content.items[i].str.includes(']')) {
+                    if (height > content.items[i].transform[5]) {
+                        timedItems.value[4] += ' ';
+                    }
+                    
                     timedItems.value[4] += content.items[i].str;
+                    height = content.items[i].transform[5];
                     i++;
                 }
 
                 timedItems.value[4] += content.items[i].str;
             } else if (content.items[i].transform[4] > 514 - treshold && content.items[i].transform[4] < 608 - treshold) {
                 timedItems.value[5] += content.items[i].str;
+                let height = content.items[i].transform[5];
                 i++;
                 while (!content.items[i].str.includes(']')) {
+                    if (height > content.items[i].transform[5]) {
+                        timedItems.value[5] += ' ';
+                    }
+                    
                     timedItems.value[5] += content.items[i].str;
+                    height = content.items[i].transform[5];
                     i++;
                 }
 
                 timedItems.value[5] += content.items[i].str;
             } else if (content.items[i].transform[4] > 608 - treshold && content.items[i].transform[4] < 702 - treshold) {
                 timedItems.value[6] += content.items[i].str;
+                let height = content.items[i].transform[5];
                 i++;
                 while (!content.items[i].str.includes(']')) {
+                    if (height > content.items[i].transform[5]) {
+                        timedItems.value[6] += ' ';
+                    }
+                    
                     timedItems.value[6] += content.items[i].str;
+                    height = content.items[i].transform[5];
                     i++;
                 }
 
                 timedItems.value[6] += content.items[i].str;
             } else if (content.items[i].transform[4] > 702 - treshold && content.items[i].transform[4] < 796 - treshold) {
                 timedItems.value[7] += content.items[i].str;
+                let height = content.items[i].transform[5];
                 i++;
                 while (!content.items[i].str.includes(']')) {
+                    if (height > content.items[i].transform[5]) {
+                        timedItems.value[7] += ' ';
+                    }
+                    
                     timedItems.value[7] += content.items[i].str;
+                    height = content.items[i].transform[5];
                     i++;
                 }
 
@@ -170,7 +218,7 @@ function parseSubjectData(subjects: string[]) {
                 let n = 0;
                 const groups = strArray[0].split(',');
                 const name = strArray[1];
-                const type = strArray[2].replace("лекции", "Лекции").replace("семинар", "Cеминары").replace("лабораторные занятия", "Лабораторные занятия");
+                const type = strArray[2].replace(/\s+/g, '').replace("лекции", "Лекции").replace("семинар", "Cеминары").replace("лабораторныезанятия", "Лабораторные занятия");
                 let subgroup = "";
                 if (type.includes("Лабораторные занятия")) {
                     if (strArray[3].includes("(А)") || strArray[3].includes("(Б)")) {
