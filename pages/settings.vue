@@ -138,7 +138,7 @@ function onSettingChange() {
                         id="first_name"
                         class="text-sm rounded-lg block w-full p-2.5 bg-[#764462] placeholder-gray-400"
                         @change="onSettingChange()"
-                        placeholder="ИДБ-19-03"
+                        placeholder="ИДБ-19-03(А)"
                     />
                 </div>
             </div>

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import cv from "@techstark/opencv-js";
 import { createWorker } from "tesseract.js";
+// import { parseSubjectData } from ""
 useHead({ title: "Сканирование фото" });
 
 const src = ref(""); // DataURL of processed image
@@ -35,26 +36,103 @@ async function UploadImg(event: Event) {
     reader.onload = (event) => {
       // Called once readAsDataURL is completed
       inputUrl = event.target.result;
-      Main();
+      // Main();
+      Slicer();
     };
   }
 }
 
-async function Main() {
-  // let img = "/column.png";
+async function Slicer() {
+  const slices: string[] = [];
+  let img = new Image();
+  img.src = inputUrl;
+  await new Promise((resolve) => {
+    img.onload = () => resolve(1);
+  });
 
-  // await worker.loadLanguage('rus');
-  // await worker.initialize('rus');
-  // await worker.setParameters({
-  //   tessedit_char_whitelist: 'абвгдеёжзийклмнопрстуфхцчшщъыьэюяАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ0123456789[].-:,() ',
-  // });
-  // const { data: { text } } = await worker.recognize(img);
+  const imgCanvas = document.createElement("canvas");
+  imgCanvas.width = DOC_WIDTH;
+  imgCanvas.height = DOC_HEIGHT;
+  const imgContext = imgCanvas.getContext("2d");
+  if (!imgContext) return;
+  imgContext.drawImage(img, 0, 0, img.width, img.height);
+
+
+  const imgData = imgContext.getImageData(0, 0, imgCanvas.width, imgCanvas.height);
+  const sliceWidth = imgCanvas.width / 8;
+
+  for (let i = 0; i < 8; i++) {
+    const sliceCanvas = document.createElement('canvas');
+    sliceCanvas.width = sliceWidth;
+    sliceCanvas.height = imgCanvas.height;
+    const sliceCtx = sliceCanvas.getContext('2d');
+    if (!sliceCtx) return;
+    sliceCtx.putImageData(imgData, -sliceWidth * i, 0);
+    slices.push(sliceCanvas.toDataURL());
+  }
+
+  // console.log(slices);
+  // src.value = slices[2];
+  let timedItems: string[] = [];
+  for (let i = 0; i < slices.length; i++) {
+    timedItems.push(await OCR(slices[i]));
+  }
+
+  subjectsArray.value = parseSubjectData(timedItems, "student");
+}
+
+const subjectsArray = ref<Subject[]>([]);
+
+interface Subject {
+    groups: string[];
+    name: string;
+    type: string;
+    subgroup: string;
+    location: string;
+    dateStr: string;
+    dates: string[];
+    time: number;
+}
+
+async function OCR(imgStr: string) {
+  let img = new Image();
+  img.src = imgStr;
+  await new Promise((resolve) => {
+    img.onload = () => resolve(1);
+  });
+
+  await worker.loadLanguage('rus');
+  await worker.initialize('rus');
+  await worker.setParameters({
+    tessedit_char_whitelist: 'абвгдеёжзийклмнопрстуфхцчшщъыьэюяАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ0123456789[].-,() ',
+  });
+  const { data: { text } } = await worker.recognize(img);
   // console.log(text);
+
   // await worker.terminate();
+  return text;
+}
+
+async function Main() {
+  let img = new Image();
+  img.src = inputUrl;
+  await new Promise((resolve) => {
+    img.onload = () => resolve(1);
+  });
+
+  await worker.loadLanguage('rus');
+  await worker.initialize('rus');
+  await worker.setParameters({
+    tessedit_char_whitelist: 'абвгдеёжзийклмнопрстуфхцчшщъыьэюяАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ0123456789[].-,() ',
+  });
+  const { data: { text } } = await worker.recognize(img);
+  console.log(text);
+
+  await worker.terminate();
 
   // fixPerspective();
 
-  findContours();
+  // findContours();
 }
 
 async function fixPerspective() {
@@ -227,11 +305,27 @@ async function findContours() {
 </script>
 <template>
   <div class="h-screen flex flex-col">
-    <div class="h-[92vh] p-5">
-      <input aria-label="Input for images to process"
-        class="h-7 block w-full text-sm text-gray-400 rounded-lg cursor-pointer focus:outline-none bg-[#764462] placeholder-gray-400"
-        type="file" accept=".png, .jpg" @change="UploadImg($event)" />
-      <img :src="src" v-if="src" class="h-[calc(100%-7px)] w-full object-contain" />
+    <div class="h-[92vh] p-5 flex justify-center">
+      <div class="w-[40%] flex flex-col my-auto">
+        <input aria-label="Input for images to process"
+          class="h-7 mb-3 block w-full text-sm text-gray-400 rounded-lg cursor-pointer focus:outline-none bg-[#764462] placeholder-gray-400"
+          type="file" accept=".png, .jpg" @change="UploadImg($event)" />
+        <!-- <img :src="src" v-if="src" class="h-[calc(100%-7px)] w-full object-contain" /> -->
+        <div class="overflow-auto h-[75vh] w-full scrollbar">
+          <div v-for="(item, i) in subjectsArray" class="w-full bg-[#764462] rounded-lg mb-3 p-3 overflow-hidden">
+              <p class="text-sm text-[#C69787] inline">{{ item.groups.join(", ") }}</p>
+              <p class="text-sm text-[#C69787] inline">{{ ' ' + item.subgroup }}</p>
+              <p class="font-medium italic">{{ item.name }}</p>
+              <p class="text-sm"
+              :class="{ 'text-[#8CC487]': item.type.includes('Лекции'),
+              'text-[#9b8fcf]': item.type.includes('Cеминары'),
+              'text-[#ccc46f]': item.type.includes('Лабораторные занятия') }">{{ item.type }}</p>
+              <p class="text-sm text-[#C69787] inline">{{ item.time }}</p>
+              <p class="text-sm text-[#C69787] inline">{{ item.dateStr }}</p>
+              <p class="text-sm text-right text-[#C69787]">{{ item.location }}</p>
+          </div>
+        </div>
+      </div>
     </div>
     <Navbar />
   </div>
