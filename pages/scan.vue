@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import cv from "@techstark/opencv-js";
 import { createWorker } from "tesseract.js";
-// import { parseSubjectData } from ""
 useHead({ title: "Сканирование фото" });
 
 const src = ref(""); // DataURL of processed image
@@ -10,7 +9,7 @@ let inputUrl = ""; // DataURL of uploaded image
 const MIN_CONTOURS_SCALE = 2; // Minimum original image ratio
 const THRESHOLD = 128; // Monochrome threshold
 const DOC_WIDTH = 1920; // Same ratio as A4 paper
-const DOC_HEIGHT = 1358;
+const DOC_HEIGHT = 1203;  //1358
 
 const worker = await createWorker();
 
@@ -71,14 +70,24 @@ async function Slicer() {
     slices.push(sliceCanvas.toDataURL());
   }
 
+  for (let i = 0; i < 7; i++) {
+    const sliceCanvas = document.createElement('canvas');
+    sliceCanvas.width = sliceWidth * 2;
+    sliceCanvas.height = imgCanvas.height;
+    const sliceCtx = sliceCanvas.getContext('2d');
+    if (!sliceCtx) return;
+    sliceCtx.putImageData(imgData, -sliceWidth * i, 0);
+    slices.push(sliceCanvas.toDataURL());
+  }
+
   // console.log(slices);
-  // src.value = slices[2];
+  // src.value = slices[8];
   let timedItems: string[] = [];
   for (let i = 0; i < slices.length; i++) {
     timedItems.push(await OCR(slices[i]));
   }
 
-  subjectsArray.value = parseSubjectData(timedItems, "student");
+  subjectsArray.value = parseSubjectDataIMG(timedItems, "student");
 }
 
 const subjectsArray = ref<Subject[]>([]);
@@ -320,8 +329,8 @@ async function findContours() {
               :class="{ 'text-[#8CC487]': item.type.includes('Лекции'),
               'text-[#9b8fcf]': item.type.includes('Cеминары'),
               'text-[#ccc46f]': item.type.includes('Лабораторные занятия') }">{{ item.type }}</p>
-              <p class="text-sm text-[#C69787] inline">{{ item.time }}</p>
-              <p class="text-sm text-[#C69787] inline">{{ item.dateStr }}</p>
+              <p class="text-sm text-[#C69787] inline">{{ timeMap.get(item.time) }}</p>
+              <p class="text-sm text-[#C69787] inline">{{ ' ' + item.dateStr }}</p>
               <p class="text-sm text-right text-[#C69787]">{{ item.location }}</p>
           </div>
         </div>
