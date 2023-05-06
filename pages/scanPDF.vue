@@ -300,7 +300,6 @@ function editSubject(item: Subject, id: number) {
     beingEdited.value = true;
     editableSubjID = id;
     editableSubject.value = item;
-    console.log(editableSubject.value);
 }
 
 function saveSubject() {
@@ -308,10 +307,17 @@ function saveSubject() {
     subjectsArray.value[editableSubjID] = editableSubject.value;
     subjectsArray.value[editableSubjID].groups = editableSubject.value.groups[0].split(',')
     subjectsArray.value[editableSubjID].dates = parseDates(editableSubject.value.dateStr);
+    localStorage.setItem('subjectsJSON', JSON.stringify(subjectsArray.value));
 }
 
 function deleteSubject(id: number) {
     subjectsArray.value.splice(id, 1);
+    localStorage.setItem('subjectsJSON', JSON.stringify(subjectsArray.value));
+}
+
+function addSubject() {
+    beingEdited.value = true;
+    editableSubject.value = new Subject([""], "", "", "", "", "", [""], 0);
 }
 </script>
 <template>
@@ -325,7 +331,7 @@ function deleteSubject(id: number) {
                     accept=".pdf"
                     @change="pdfUploaded($event)"
                 />
-                <div class="overflow-auto h-[75vh] w-full scrollbar">
+                <div class="overflow-auto overflow-x-hidden h-[75vh] w-full scrollbar">
                     <div v-if="!beingEdited" v-for="(item, i) in subjectsArray" class="relative w-full bg-[#764462] rounded-lg mb-3 p-3 overflow-hidden">
                         <p class="text-sm text-[#C69787] inline">{{ item.groups.join(", ") }}</p>
                         <p class="text-sm text-[#C69787] inline">{{ ' ' + item.subgroup }}</p>
@@ -351,7 +357,7 @@ function deleteSubject(id: number) {
                     <div v-else class="overflow-x-hidden">
                         <div class="w-full bg-[#764462] rounded-lg mb-3 p-3">
                             <p class="block mb-2 text-sm font-medium">Группы / преподаватель</p>
-                            <input v-model="editableSubject.groups" type="text" placeholder="ИДБ-19-03" class="text-sm rounded-lg block w-full p-2.5 bg-[#764462] placeholder-gray-400 border border-[#C69787] mb-1" />
+                            <input v-model="editableSubject.groups[0]" type="text" placeholder="ИДБ-19-03" class="text-sm rounded-lg block w-full p-2.5 bg-[#764462] placeholder-gray-400 border border-[#C69787] mb-1" />
                             <p class="block mb-2 text-sm font-medium">Подгруппа</p>
                             <!-- <input v-model="editableSubject.subgroup" type="text" placeholder="(А)" class="text-sm rounded-lg block w-full p-2.5 bg-[#764462] placeholder-gray-400 border border-[#C69787] mb-1" /> -->
                             <select v-model="editableSubject.subgroup" class="p-2.5 text-sm cursor-pointer w-full rounded-lg bg-[#764462] hover:bg-[#EDB4A1] hover:text-[#2C2137] outline-none border border-[#C69787] mb-1">
@@ -394,6 +400,7 @@ function deleteSubject(id: number) {
                         </div>
                         <my-button class="w-full" @click="saveSubject()">Сохранить изменения</my-button>
                     </div>
+                    <my-button v-if="!beingEdited" class="w-full" @click="addSubject()">Добавить</my-button>
                 </div>
             </div>
         </div>
