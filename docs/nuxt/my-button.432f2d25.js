@@ -1,0 +1,1 @@
+import{Q as o,o as t,p as n,l as s}from"./entry.90287817.js";const r={},c={type:"button",class:"h-[64px] px-7 mr-2 mb-2 rounded-lg focus:z-10 bg-[#764462] hover:text-[#2C2137] hover:bg-[#EDB4A1] select-none"};function _(e,a){return t(),n("button",c,[s(e.$slots,"default")])}const p=o(r,[["render",_]]);export{p as _};

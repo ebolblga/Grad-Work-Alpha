@@ -397,9 +397,19 @@ function addSubject() {
           type="file" accept=".png, .jpg" @change="UploadImg($event)" />
         <img :src="src" v-if="src" class="h-[calc(100%-7px)] w-full object-contain mb-3" />
         <div class="overflow-auto overflow-x-hidden h-[50vh] w-full scrollbar">
-          <div v-if="!beingEdited" v-for="(item, i) in subjectsArray" class="w-full bg-[#764462] rounded-lg mb-3 p-3 overflow-hidden" @click="editSubject(item, i)">
+          <div v-if="!beingEdited" v-for="(item, i) in subjectsArray" class="relative w-full bg-[#764462] rounded-lg mb-3 p-3 overflow-hidden">
               <p class="text-sm text-[#C69787] inline">{{ item.groups.join(", ") }}</p>
               <p class="text-sm text-[#C69787] inline">{{ ' ' + item.subgroup }}</p>
+              <div class="w-6 h-6 absolute right-12 top-3 cursor-pointer" @click="editSubject(item, i)">
+                  <svg class="fill-orange-400" height="24" viewBox="0 96 960 960" width="24">
+                      <path d="M189 875h30l435-438-30-30-435 438v30Zm604-480L667 270l22-22q26-27 64-27.5t64 24.5l16 17q22 21 19.5 48.5T831 357l-38 38Zm-41 41L245 943H120V817l506-505 126 124Zm-111-13-17-16 30 30-13-14Z"/>
+                  </svg>
+              </div>
+              <div class="w-6 h-6 absolute right-3 top-3 cursor-pointer" @click="deleteSubject(i)">
+                  <svg class="fill-red-400" height="24" viewBox="0 96 960 960" width="24">
+                      <path d="M253 957q-38.212 0-65.106-26.6Q161 903.8 161 866V314h-58v-91h228v-47h297v47h228v91h-58v552q0 37.175-27.206 64.088Q743.588 957 706 957H253Zm453-643H253v552h453V314ZM357 788h74V390h-74v398Zm173 0h75V390h-75v398ZM253 314v552-552Z"/>
+                  </svg>
+              </div>
               <p class="font-medium italic">{{ item.name }}</p>
               <p class="text-sm"
               :class="{ 'text-[#8CC487]': item.type.includes('Лекции'),
