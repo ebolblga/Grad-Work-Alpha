@@ -12,7 +12,7 @@ const THRESHOLD = 128; // Monochrome threshold
 const DOC_WIDTH = 1920; // Same ratio as A4 paper
 const DOC_HEIGHT = 1203;  //1358
 
-const worker = await createWorker();
+// const worker = await createWorker();
 
 interface Subject {
     groups: string[];
@@ -76,18 +76,20 @@ async function FULLPROCESSING() {
   binarizationWulff(imageData, imgWidth, imgHeight, 10, 0.2);
 
   imgContext.putImageData(imageData, 0, 0);
-  src.value = imgCanvas.toDataURL();
+  // src.value = imgCanvas.toDataURL();
 
-  fixPerspective(cv.imread(imgCanvas));
+  src.value = await fixPerspective(cv.imread(imgCanvas));
   // findContours(cv.imread(imgCanvas));
+  // await Slicer(src.value);
+  await OCR2(src.value);
 
   console.log(Date.now() - start + " ms");
 }
 
-async function Slicer() {
-  const slices: string[] = [];
+async function Slicer(DataURL: string) {
+  const slices: HTMLCanvasElement[] = [];
   let img = new Image();
-  img.src = inputUrl;
+  img.src = DataURL;
   await new Promise((resolve) => {
     img.onload = () => resolve(1);
   });
@@ -101,30 +103,31 @@ async function Slicer() {
 
 
   const imgData = imgContext.getImageData(0, 0, imgCanvas.width, imgCanvas.height);
-  const sliceWidth = imgCanvas.width / 8;
+  // const sliceWidth = imgCanvas.width / 8;
+  const sliceWidth = 1888 / 8;
 
   for (let i = 0; i < 8; i++) {
     const sliceCanvas = document.createElement('canvas');
     sliceCanvas.width = sliceWidth;
-    sliceCanvas.height = imgCanvas.height;
+    sliceCanvas.height = imgCanvas.height - 32;
     const sliceCtx = sliceCanvas.getContext('2d');
     if (!sliceCtx) return;
-    sliceCtx.putImageData(imgData, -sliceWidth * i, 0);
-    slices.push(sliceCanvas.toDataURL());
+    sliceCtx.putImageData(imgData, (-sliceWidth * i) - 32, -32);
+    slices.push(sliceCanvas);
   }
 
   for (let i = 0; i < 7; i++) {
     const sliceCanvas = document.createElement('canvas');
     sliceCanvas.width = sliceWidth * 2;
-    sliceCanvas.height = imgCanvas.height;
+    sliceCanvas.height = imgCanvas.height - 32;
     const sliceCtx = sliceCanvas.getContext('2d');
     if (!sliceCtx) return;
-    sliceCtx.putImageData(imgData, -sliceWidth * i, 0);
-    slices.push(sliceCanvas.toDataURL());
+    sliceCtx.putImageData(imgData, (-sliceWidth * i) - 32, -32);
+    slices.push(sliceCanvas);
   }
 
   // console.log(slices);
-  // src.value = slices[8];
+  // src.value = slices[1];
   let timedItems: string[] = [];
   for (let i = 0; i < slices.length; i++) {
     timedItems.push(await OCR(slices[i]));
@@ -133,68 +136,76 @@ async function Slicer() {
   subjectsArray.value = parseSubjectDataIMG(timedItems, "student");
 }
 
-async function OCR(imgStr: string) {
-  let img = new Image();
-  img.src = imgStr;
-  await new Promise((resolve) => {
-    img.onload = () => resolve(1);
-  });
-
+async function OCR(img: HTMLCanvasElement) {
   await worker.loadLanguage('rus');
   await worker.initialize('rus');
   await worker.setParameters({
     tessedit_char_whitelist: 'абвгдеёжзийклмнопрстуфхцчшщъыьэюяАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ0123456789[].-,() ',
   });
   const { data: { text } } = await worker.recognize(img);
-  // console.log(text);
 
   // await worker.terminate();
   return text;
 }
 
-async function Main() {
-  // let img = new Image();
-  // img.src = inputUrl;
-  // await new Promise((resolve) => {
-  //   img.onload = () => resolve(1);
-  // });
+async function OCR2(DataURL: string) {
+  let img = new Image();
+  img.src = DataURL;
+  await new Promise((resolve) => {
+    img.onload = () => resolve(1);
+  });
 
-  // await worker.loadLanguage('rus');
-  // await worker.initialize('rus');
-  // await worker.setParameters({
-  //   tessedit_char_whitelist: 'абвгдеёжзийклмнопрстуфхцчшщъыьэюяАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ0123456789[].-,() ',
-  // });
-  // const { data: { text } } = await worker.recognize(img);
-  // console.log(text);
+  const imgCanvas = document.createElement("canvas");
+  imgCanvas.width = DOC_WIDTH;
+  imgCanvas.height = DOC_HEIGHT;
+  const imgContext = imgCanvas.getContext("2d");
+  if (!imgContext) return;
+  imgContext.drawImage(img, 0, 0, img.width, img.height);
 
-  // await worker.terminate();
+  let recognizedTxt: string[] = [];
+  const sliceWidth = (DOC_WIDTH - 32) / 8;
+  const worker = await createWorker();
+  await worker.loadLanguage('rus');
+  await worker.initialize('rus');
+  await worker.setParameters({
+    tessedit_char_whitelist: 'абвгдеёжзийклмнопрстуфхцчшщъыьэюяАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ0123456789[].-,() ',
+  });
+  for (let i = 0; i < 8; i++) {
+    const { data: { text } } = await worker.recognize(img, {
+      rectangle: { top: 32, left: (sliceWidth * i) + 32, width: sliceWidth, height: DOC_HEIGHT - 32 },
+    });
+    recognizedTxt.push(text);
+  }
 
-  // fixPerspective();
-
-  findContours();
+  for (let i = 0; i < 7; i++) {
+    const { data: { text } } = await worker.recognize(img, {
+      rectangle: { top: 32, left: (sliceWidth * i) + 32, width: sliceWidth * 2, height: DOC_HEIGHT - 32 },
+    });
+    recognizedTxt.push(text);
+  }
+  
+  await worker.terminate();
+  subjectsArray.value = parseSubjectDataIMG(recognizedTxt, "student");
+  return;
 }
 
 async function fixPerspective(im: cv.Mat) {
-  // const start = Date.now();
-  // let img = new Image();
-  // img.src = inputUrl;
-  // await new Promise((resolve) => {
-  //   img.onload = () => resolve(1);
-  // });
-  // const im = cv.imread(img);
   const pts = getContoursPoints(im);
 
   if (pts) {
     const transformedIm = getTransformedImage(im, pts);
+    im.delete();
     let canvas = document.createElement("canvas");
     cv.imshow(canvas, transformedIm);
-    src.value = canvas.toDataURL();
+    // src.value = canvas.toDataURL();
     // console.log("Perspective fix done!", Date.now() - start);
+    return canvas.toDataURL();
   } else {
     console.log("Perspective fix failed...");
   }
 
   im.delete();
+  return "";
 }
 
 function getContoursPoints(im: cv.Mat) {
@@ -250,9 +261,10 @@ function getContoursPoints(im: cv.Mat) {
   im_gray.delete();
   threshold_im.delete();
   if (pts) {
-    console.log(pts.data32S)
+    // console.log(pts.data32S)
     pts.convertTo(pts, cv.CV_32FC2);
-    console.log(pts.data32F)
+    // console.log(pts.data32F[0])
+    // pts.data32F[0]
   } else {
     console.log("Rectangles not found")
   }
@@ -268,13 +280,13 @@ function getTransformedImage(im: cv.Mat, fromPts: cv.Mat) {
   const cols = DOC_WIDTH;
   let dsize = new cv.Size(cols, rows);
   const toPts = cv.matFromArray(4, 1, cv.CV_32FC2, [
+    0,
+    0,
     cols,
     0,
-    0,
-    0,
-    0,
+    cols,
     rows,
-    cols,
+    0,
     rows,
   ]);
   // console.log(fromPts.data32S);
@@ -286,14 +298,7 @@ function getTransformedImage(im: cv.Mat, fromPts: cv.Mat) {
   return transformedIm;
 }
 
-async function findContours(im: cv.Mat) {
-  // let img = new Image();
-  // img.src = inputUrl;
-  // await new Promise((resolve) => {
-  //   img.onload = () => resolve(1);
-  // });
-  // const im = cv.imread(img);
-
+async function drawContours(im: cv.Mat) {
   // Image area
   const imRectArea = im.cols * im.rows;
 
@@ -319,16 +324,14 @@ async function findContours(im: cv.Mat) {
   for (let i = 0; i < Number(contours.size()); ++i) {
     let cnt = contours.get(i);
     const cntArea = cv.contourArea(cnt);
-    const maxRectScale = parseInt(((cntArea / imRectArea) * 100).toString());
-    if (maxRectScale >= MIN_CONTOURS_SCALE) {
+    const maxRectScale = (cntArea / imRectArea) * 100;
+    if (maxRectScale >= MIN_CONTOURS_SCALE&& maxRectScale < 99) {
       let approx = new cv.Mat();
       const epsilon = 0.02 * cv.arcLength(cnt, true);
       cv.approxPolyDP(cnt, approx, epsilon, true);
 
       if (approx.size().height === 4) {
         let color = new cv.Scalar(Math.round(Math.random() * 255), Math.round(Math.random() * 255), Math.round(Math.random() * 255), 255);
-        console.log(i, color.toString());
-        // let color = new cv.Scalar(255, 0, 0, 255);
 
         cv.drawContours(im, contours, i, color, 3, cv.LINE_AA, hierarchy, 0);
       }
@@ -356,8 +359,8 @@ function editSubject(item: Subject) {
         <input aria-label="Input for images to process"
           class="h-7 mb-3 block w-full text-sm text-gray-400 rounded-lg cursor-pointer focus:outline-none bg-[#764462] placeholder-gray-400"
           type="file" accept=".png, .jpg" @change="UploadImg($event)" />
-        <img :src="src" v-if="src" class="h-[calc(100%-7px)] w-full object-contain" />
-        <div class="overflow-auto h-[75vh] w-full scrollbar">
+        <img :src="src" v-if="src" class="h-[calc(100%-7px)] w-full object-contain mb-3" />
+        <div class="overflow-auto h-[50vh] w-full scrollbar">
           <div v-for="(item, i) in subjectsArray" class="w-full bg-[#764462] rounded-lg mb-3 p-3 overflow-hidden" @click="editSubject(item)">
               <p class="text-sm text-[#C69787] inline">{{ item.groups.join(", ") }}</p>
               <p class="text-sm text-[#C69787] inline">{{ ' ' + item.subgroup }}</p>
