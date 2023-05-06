@@ -15,9 +15,6 @@ const timedItems = ref([
     ""
 ]);
 
-const user = localStorage.getItem('user') || "professor";
-const treshold = 2;
-const subjectsArray = ref<Subject[]>([]);
 class Subject {
     groups: string[];
     name: string;
@@ -39,6 +36,12 @@ class Subject {
         this.time = time;
     }
 };
+
+const user = localStorage.getItem('user') || "professor";
+const beingEdited = ref(false);
+const editableSubject = ref<Subject>(new Subject([""], "", "", "", "", "", [""], 0));
+const treshold = 2;
+const subjectsArray = ref<Subject[]>([]);
 
 async function pdfUploaded(event: Event) {
 
@@ -291,6 +294,12 @@ function dateParser(date: string) {
     const year = new Date().getFullYear();
     return new Date(year, parseInt(month, 10) - 1, parseInt(day, 10));
 }
+
+function editSubject(item: Subject) {
+    beingEdited.value = true;
+    editableSubject.value = item;
+    console.log(editableSubject.value);
+}
 </script>
 <template>
     <div class="h-screen flex flex-col">
@@ -304,7 +313,7 @@ function dateParser(date: string) {
                     @change="pdfUploaded($event)"
                 />
                 <div class="overflow-auto h-[75vh] w-full scrollbar">
-                    <div v-for="(item, i) in subjectsArray" class="w-full bg-[#764462] rounded-lg mb-3 p-3 overflow-hidden">
+                    <div v-if="!beingEdited" v-for="(item, i) in subjectsArray" class="w-full bg-[#764462] rounded-lg mb-3 p-3 overflow-hidden" @click="editSubject(item)">
                         <p class="text-sm text-[#C69787] inline">{{ item.groups.join(", ") }}</p>
                         <p class="text-sm text-[#C69787] inline">{{ ' ' + item.subgroup }}</p>
                         <p class="font-medium italic">{{ item.name }}</p>
@@ -315,6 +324,14 @@ function dateParser(date: string) {
                         <p class="text-sm text-[#C69787] inline">{{ timeMap.get(item.time) }}</p>
                         <p class="text-sm text-[#C69787] inline">{{ item.dateStr }}</p>
                         <p class="text-sm text-right text-[#C69787]">{{ item.location }}</p>
+                    </div>
+                    <div v-else>
+                        <div class="w-full bg-[#764462] rounded-lg mb-3 p-3">
+                        <input v-model="editableSubject.groups" type="text" placeholder="ИДБ-19-03(А)" class="text-sm rounded-lg block w-full p-2.5 bg-[#764462] placeholder-gray-400 border border-[#C69787] mb-1" />
+                        <input v-model="editableSubject.name" type="text" placeholder="ИДБ-19-03(А)" class="text-sm rounded-lg block w-full p-2.5 bg-[#764462] placeholder-gray-400 border border-[#C69787] mb-1" />
+                        
+                        </div>
+                        <my-button class="w-full">Сохранить изменения</my-button>
                     </div>
                 </div>
             </div>

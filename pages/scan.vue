@@ -349,7 +349,7 @@ async function drawContours(im: cv.Mat) {
 }
 
 function editSubject(item: Subject) {
-  console.log(item.type);
+  console.log(item);
 }
 </script>
 <template>

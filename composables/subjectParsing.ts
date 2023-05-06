@@ -70,7 +70,7 @@ export function parseSubjectDataIMG(subjects: string[], user: string) {
                     subjectsArray.push(subject);
                 }
             } catch {
-                console.log(strArray)
+                // console.log(strArray)
             }
 
             // console.log(subject);
@@ -78,7 +78,7 @@ export function parseSubjectDataIMG(subjects: string[], user: string) {
     }
     
     // console.log(subjectsArray.value);
-    return subjectsArray;
+    return removeDoubles(subjectsArray);
 }
 
 function errorCorrection(str: string) {
@@ -107,8 +107,33 @@ function errorCorrection(str: string) {
 
     // console.log(str);
     // console.log(output.join(""));
-    console.log(outStr);
+    // console.log(outStr);
     return outStr;
+}
+
+function removeDoubles(subjectsArray: Subject[]) {
+    let outputArray: Subject[] = [];
+    let flag = false;
+    for (let i = 0; i < subjectsArray.length; i++) {
+        for (let j = 0; j < outputArray.length; j++) {
+            const timeFrame = outputArray[j].time - subjectsArray[i].time;
+            if (timeFrame === 0 || timeFrame === 7 || timeFrame === 8) {
+                // if (subjectsArray[i].name === "Современные технологии и средства разработки программного обеспечения" && outputArray[j].name ==="Современные технологии и средства разработки программного обеспечения") console.log(subjectsArray[i], outputArray[j], timeFrame)
+                if (subjectsArray[i].subgroup === outputArray[j].subgroup) {
+                    if (subjectsArray[i].dateStr.replace(/[ \[\]\.\-кчн]/g, '') === outputArray[j].dateStr.replace(/[ \[\]\.\-кчн]/g, '')) {
+                        flag = true;
+                    }
+                }
+            }
+        }
+
+        if (!flag) outputArray.push(subjectsArray[i]);
+        else console.log(subjectsArray[i])
+        flag = false;
+    }
+
+    console.log(outputArray)
+    return outputArray;
 }
 
 export function parseSubjectData(subjects: string[], user: string) {
