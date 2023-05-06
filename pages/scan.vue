@@ -5,15 +5,25 @@ useHead({ title: "Сканирование фото" });
 
 const src = ref(""); // DataURL of processed image
 let inputUrl = ""; // DataURL of uploaded image
+const subjectsArray = ref<Subject[]>([]);
 
-const MIN_CONTOURS_SCALE = 2; // Minimum original image ratio
+const MIN_CONTOURS_SCALE = 70; // Minimum original image ratio
 const THRESHOLD = 128; // Monochrome threshold
 const DOC_WIDTH = 1920; // Same ratio as A4 paper
 const DOC_HEIGHT = 1203;  //1358
 
 const worker = await createWorker();
 
-onMounted(async () => { });
+interface Subject {
+    groups: string[];
+    name: string;
+    type: string;
+    subgroup: string;
+    location: string;
+    dateStr: string;
+    dates: string[];
+    time: number;
+}
 
 // Uploads image to DataURL
 async function UploadImg(event: Event) {
@@ -36,9 +46,42 @@ async function UploadImg(event: Event) {
       // Called once readAsDataURL is completed
       inputUrl = event.target.result;
       // Main();
-      Slicer();
+      // Slicer();
+      FULLPROCESSING();
     };
   }
+}
+
+async function FULLPROCESSING() {
+  const start = Date.now();
+
+  const img = new Image();
+  img.src = inputUrl;
+  await new Promise((resolve) => {
+    img.onload = () => resolve(1);
+  });
+
+  const imgWidth = img.width;
+  const imgHeight = img.height;
+
+  const imgCanvas = document.createElement("canvas");
+  imgCanvas.width = imgWidth;
+  imgCanvas.height = imgHeight;
+  const imgContext = imgCanvas.getContext("2d", { willReadFrequently: true });
+  if (!imgContext) return;
+  imgContext.drawImage(img, 0, 0, imgWidth, imgHeight);
+
+  let imageData = imgContext.getImageData(0, 0, imgWidth, imgHeight);
+
+  binarizationWulff(imageData, imgWidth, imgHeight, 10, 0.2);
+
+  imgContext.putImageData(imageData, 0, 0);
+  src.value = imgCanvas.toDataURL();
+
+  fixPerspective(cv.imread(imgCanvas));
+  // findContours(cv.imread(imgCanvas));
+
+  console.log(Date.now() - start + " ms");
 }
 
 async function Slicer() {
@@ -90,19 +133,6 @@ async function Slicer() {
   subjectsArray.value = parseSubjectDataIMG(timedItems, "student");
 }
 
-const subjectsArray = ref<Subject[]>([]);
-
-interface Subject {
-    groups: string[];
-    name: string;
-    type: string;
-    subgroup: string;
-    location: string;
-    dateStr: string;
-    dates: string[];
-    time: number;
-}
-
 async function OCR(imgStr: string) {
   let img = new Image();
   img.src = imgStr;
@@ -123,35 +153,35 @@ async function OCR(imgStr: string) {
 }
 
 async function Main() {
-  let img = new Image();
-  img.src = inputUrl;
-  await new Promise((resolve) => {
-    img.onload = () => resolve(1);
-  });
+  // let img = new Image();
+  // img.src = inputUrl;
+  // await new Promise((resolve) => {
+  //   img.onload = () => resolve(1);
+  // });
 
-  await worker.loadLanguage('rus');
-  await worker.initialize('rus');
-  await worker.setParameters({
-    tessedit_char_whitelist: 'абвгдеёжзийклмнопрстуфхцчшщъыьэюяАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ0123456789[].-,() ',
-  });
-  const { data: { text } } = await worker.recognize(img);
-  console.log(text);
+  // await worker.loadLanguage('rus');
+  // await worker.initialize('rus');
+  // await worker.setParameters({
+  //   tessedit_char_whitelist: 'абвгдеёжзийклмнопрстуфхцчшщъыьэюяАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ0123456789[].-,() ',
+  // });
+  // const { data: { text } } = await worker.recognize(img);
+  // console.log(text);
 
-  await worker.terminate();
+  // await worker.terminate();
 
   // fixPerspective();
 
-  // findContours();
+  findContours();
 }
 
-async function fixPerspective() {
-  const start = Date.now();
-  let img = new Image();
-  img.src = inputUrl;
-  await new Promise((resolve) => {
-    img.onload = () => resolve(1);
-  });
-  const im = cv.imread(img);
+async function fixPerspective(im: cv.Mat) {
+  // const start = Date.now();
+  // let img = new Image();
+  // img.src = inputUrl;
+  // await new Promise((resolve) => {
+  //   img.onload = () => resolve(1);
+  // });
+  // const im = cv.imread(img);
   const pts = getContoursPoints(im);
 
   if (pts) {
@@ -159,7 +189,7 @@ async function fixPerspective() {
     let canvas = document.createElement("canvas");
     cv.imshow(canvas, transformedIm);
     src.value = canvas.toDataURL();
-    console.log("Perspective fix done!", Date.now() - start);
+    // console.log("Perspective fix done!", Date.now() - start);
   } else {
     console.log("Perspective fix failed...");
   }
@@ -197,9 +227,9 @@ function getContoursPoints(im: cv.Mat) {
   for (let i = 0; i < Number(contours.size()); ++i) {
     let cnt = contours.get(i);
     const cntArea = cv.contourArea(cnt);
-    const maxRectScale = parseInt((cntArea / imRectArea) * 100); // How big is it compared to the original image (%)
+    const maxRectScale = (cntArea / imRectArea) * 100; // How big is it compared to the original image (%)
 
-    if (maxRectScale >= MIN_CONTOURS_SCALE) {
+    if (maxRectScale >= MIN_CONTOURS_SCALE && maxRectScale < 99) {
       // Filter by ratio to original image
       if (cntArea > maxCntArea) {
         // Keep larger
@@ -220,7 +250,9 @@ function getContoursPoints(im: cv.Mat) {
   im_gray.delete();
   threshold_im.delete();
   if (pts) {
+    console.log(pts.data32S)
     pts.convertTo(pts, cv.CV_32FC2);
+    console.log(pts.data32F)
   } else {
     console.log("Rectangles not found")
   }
@@ -254,13 +286,13 @@ function getTransformedImage(im: cv.Mat, fromPts: cv.Mat) {
   return transformedIm;
 }
 
-async function findContours() {
-  let img = new Image();
-  img.src = inputUrl;
-  await new Promise((resolve) => {
-    img.onload = () => resolve(1);
-  });
-  const im = cv.imread(img);
+async function findContours(im: cv.Mat) {
+  // let img = new Image();
+  // img.src = inputUrl;
+  // await new Promise((resolve) => {
+  //   img.onload = () => resolve(1);
+  // });
+  // const im = cv.imread(img);
 
   // Image area
   const imRectArea = im.cols * im.rows;
@@ -287,15 +319,16 @@ async function findContours() {
   for (let i = 0; i < Number(contours.size()); ++i) {
     let cnt = contours.get(i);
     const cntArea = cv.contourArea(cnt);
-    const maxRectScale = parseInt((cntArea / imRectArea) * 100);
+    const maxRectScale = parseInt(((cntArea / imRectArea) * 100).toString());
     if (maxRectScale >= MIN_CONTOURS_SCALE) {
       let approx = new cv.Mat();
       const epsilon = 0.02 * cv.arcLength(cnt, true);
       cv.approxPolyDP(cnt, approx, epsilon, true);
 
       if (approx.size().height === 4) {
-        // let color = new cv.Scalar(Math.round(Math.random() * 255), Math.round(Math.random() * 255), Math.round(Math.random() * 255));
-        let color = new cv.Scalar(255, 0, 0, 255);
+        let color = new cv.Scalar(Math.round(Math.random() * 255), Math.round(Math.random() * 255), Math.round(Math.random() * 255), 255);
+        console.log(i, color.toString());
+        // let color = new cv.Scalar(255, 0, 0, 255);
 
         cv.drawContours(im, contours, i, color, 3, cv.LINE_AA, hierarchy, 0);
       }
@@ -311,6 +344,10 @@ async function findContours() {
   im_gray.delete();
   threshold_im.delete();
 }
+
+function editSubject(item: Subject) {
+  console.log(item.type);
+}
 </script>
 <template>
   <div class="h-screen flex flex-col">
@@ -319,9 +356,9 @@ async function findContours() {
         <input aria-label="Input for images to process"
           class="h-7 mb-3 block w-full text-sm text-gray-400 rounded-lg cursor-pointer focus:outline-none bg-[#764462] placeholder-gray-400"
           type="file" accept=".png, .jpg" @change="UploadImg($event)" />
-        <!-- <img :src="src" v-if="src" class="h-[calc(100%-7px)] w-full object-contain" /> -->
+        <img :src="src" v-if="src" class="h-[calc(100%-7px)] w-full object-contain" />
         <div class="overflow-auto h-[75vh] w-full scrollbar">
-          <div v-for="(item, i) in subjectsArray" class="w-full bg-[#764462] rounded-lg mb-3 p-3 overflow-hidden">
+          <div v-for="(item, i) in subjectsArray" class="w-full bg-[#764462] rounded-lg mb-3 p-3 overflow-hidden" @click="editSubject(item)">
               <p class="text-sm text-[#C69787] inline">{{ item.groups.join(", ") }}</p>
               <p class="text-sm text-[#C69787] inline">{{ ' ' + item.subgroup }}</p>
               <p class="font-medium italic">{{ item.name }}</p>
