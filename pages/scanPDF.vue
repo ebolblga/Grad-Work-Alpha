@@ -317,6 +317,7 @@ function deleteSubject(id: number) {
 
 function addSubject() {
     beingEdited.value = true;
+    editableSubjID = subjectsArray.value.length;
     editableSubject.value = new Subject([""], "", "", "", "", "", [""], 0);
 }
 </script>

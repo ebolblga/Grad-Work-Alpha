@@ -204,7 +204,7 @@ export function parseSubjectData(subjects: string[], user: string) {
     return subjectsArray;
 }
 
-function parseDates(dates: string) {
+export function parseDates(dates: string) {
     // return [dates];
     const tmpArray: string[] = dates.replace(/(к.н.)|(ч.н.)|[\[\] ]/g, '').split(',');
     let dateArray: string[] = [];

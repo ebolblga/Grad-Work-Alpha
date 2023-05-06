@@ -16,10 +16,16 @@ useHead({
     { name: 'description', content: 'Author: ebolblga, Calendar app' }
   ],
 });
+
+const dyslexiaToggle = ref(localStorage.getItem('dyslexiaToggle') === "true" || false);
+const fontMultiplier = ref(Number(localStorage.getItem('fontMultiplier')) || 1);
+let selectedFont: string = dyslexiaToggle.value ? "OpenDyslexic" : "Montserrat";
+let fontSize = (16 * fontMultiplier.value).toString() + "px";
+console.log(selectedFont)
 </script>
 
 <template>
-    <div class="h-screen">
+    <div class="h-screen" :style="{fontFamily: selectedFont, 'font-size': fontSize}">
       <slot />
     </div>
 </template>
@@ -30,13 +36,15 @@ body {
     background: #2C2137;
     font-size: 16px;
     color: #EDB4A1;
-    font-family: Montserrat;
+    font-family: "Montserrat";
 }
 
-/* @font-face {
+@font-face {
+  font-family: 'OpenDyslexic';
+  src: url('/OpenDyslexic-Regular.otf');
   font-family: 'Montserrat';
-  src: url('/tf2build.ttf');
-} */
+  src: url('/Montserrat-Regular.ttf');
+}
 
 .scrollbar::-webkit-scrollbar {
   width: 8px;

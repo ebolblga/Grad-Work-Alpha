@@ -3,18 +3,7 @@ import cv from "@techstark/opencv-js";
 import { createWorker } from "tesseract.js";
 useHead({ title: "Сканирование фото" });
 
-const src = ref(""); // DataURL of processed image
-let inputUrl = ""; // DataURL of uploaded image
-const subjectsArray = ref<Subject[]>([]);
-
-const MIN_CONTOURS_SCALE = 70; // Minimum original image ratio
-const THRESHOLD = 128; // Monochrome threshold
-const DOC_WIDTH = 1920; // Same ratio as A4 paper
-const DOC_HEIGHT = 1203;  //1358
-
-// const worker = await createWorker();
-
-interface Subject {
+class Subject {
     groups: string[];
     name: string;
     type: string;
@@ -23,7 +12,32 @@ interface Subject {
     dateStr: string;
     dates: string[];
     time: number;
-}
+
+    constructor(groups: string[], name: string, type: string, subgroup: string, location: string, dateStr: string, dates: string[], time: number) {
+        this.groups = groups;
+        this.name = name;
+        this.type = type;
+        this.subgroup = subgroup;
+        this.location = location;
+        this.dateStr = dateStr;
+        this.dates = dates;
+        this.time = time;
+    }
+};
+
+const src = ref(""); // DataURL of processed image
+let inputUrl = ""; // DataURL of uploaded image
+const subjectsArray = ref<Subject[]>([]);
+const beingEdited = ref(false);
+const editableSubject = ref<Subject>(new Subject([""], "", "", "", "", "", [""], 0));
+let editableSubjID = 0;
+
+const MIN_CONTOURS_SCALE = 70; // Minimum original image ratio
+const THRESHOLD = 128; // Monochrome threshold
+const DOC_WIDTH = 1920; // Same ratio as A4 paper
+const DOC_HEIGHT = 1203;  //1358
+
+// const worker = await createWorker();
 
 // Uploads image to DataURL
 async function UploadImg(event: Event) {
@@ -186,6 +200,7 @@ async function OCR2(DataURL: string) {
   
   await worker.terminate();
   subjectsArray.value = parseSubjectDataIMG(recognizedTxt, "student");
+  localStorage.setItem('subjectsJSON', JSON.stringify(subjectsArray.value));
   return;
 }
 
@@ -348,8 +363,29 @@ async function drawContours(im: cv.Mat) {
   threshold_im.delete();
 }
 
-function editSubject(item: Subject) {
-  console.log(item);
+function editSubject(item: Subject, id: number) {
+    beingEdited.value = true;
+    editableSubjID = id;
+    editableSubject.value = item;
+}
+
+function saveSubject() {
+    beingEdited.value = false;
+    subjectsArray.value[editableSubjID] = editableSubject.value;
+    subjectsArray.value[editableSubjID].groups = editableSubject.value.groups[0].split(',')
+    subjectsArray.value[editableSubjID].dates = parseDates(editableSubject.value.dateStr);
+    localStorage.setItem('subjectsJSON', JSON.stringify(subjectsArray.value));
+}
+
+function deleteSubject(id: number) {
+    subjectsArray.value.splice(id, 1);
+    localStorage.setItem('subjectsJSON', JSON.stringify(subjectsArray.value));
+}
+
+function addSubject() {
+    beingEdited.value = true;
+    editableSubjID = subjectsArray.value.length;
+    editableSubject.value = new Subject([""], "", "", "", "", "", [""], 0);
 }
 </script>
 <template>
@@ -360,8 +396,8 @@ function editSubject(item: Subject) {
           class="h-7 mb-3 block w-full text-sm text-gray-400 rounded-lg cursor-pointer focus:outline-none bg-[#764462] placeholder-gray-400"
           type="file" accept=".png, .jpg" @change="UploadImg($event)" />
         <img :src="src" v-if="src" class="h-[calc(100%-7px)] w-full object-contain mb-3" />
-        <div class="overflow-auto h-[50vh] w-full scrollbar">
-          <div v-for="(item, i) in subjectsArray" class="w-full bg-[#764462] rounded-lg mb-3 p-3 overflow-hidden" @click="editSubject(item)">
+        <div class="overflow-auto overflow-x-hidden h-[50vh] w-full scrollbar">
+          <div v-if="!beingEdited" v-for="(item, i) in subjectsArray" class="w-full bg-[#764462] rounded-lg mb-3 p-3 overflow-hidden" @click="editSubject(item, i)">
               <p class="text-sm text-[#C69787] inline">{{ item.groups.join(", ") }}</p>
               <p class="text-sm text-[#C69787] inline">{{ ' ' + item.subgroup }}</p>
               <p class="font-medium italic">{{ item.name }}</p>
@@ -373,6 +409,53 @@ function editSubject(item: Subject) {
               <p class="text-sm text-[#C69787] inline">{{ ' ' + item.dateStr }}</p>
               <p class="text-sm text-right text-[#C69787]">{{ item.location }}</p>
           </div>
+          <div v-else class="overflow-x-hidden">
+            <div class="w-full bg-[#764462] rounded-lg mb-3 p-3">
+                <p class="block mb-2 text-sm font-medium">Группы / преподаватель</p>
+                <input v-model="editableSubject.groups[0]" type="text" placeholder="ИДБ-19-03" class="text-sm rounded-lg block w-full p-2.5 bg-[#764462] placeholder-gray-400 border border-[#C69787] mb-1" />
+                <p class="block mb-2 text-sm font-medium">Подгруппа</p>
+                <!-- <input v-model="editableSubject.subgroup" type="text" placeholder="(А)" class="text-sm rounded-lg block w-full p-2.5 bg-[#764462] placeholder-gray-400 border border-[#C69787] mb-1" /> -->
+                <select v-model="editableSubject.subgroup" class="p-2.5 text-sm cursor-pointer w-full rounded-lg bg-[#764462] hover:bg-[#EDB4A1] hover:text-[#2C2137] outline-none border border-[#C69787] mb-1">
+                    <option value=""></option>
+                    <option value="(А)">(А)</option>
+                    <option value="(Б)">(Б)</option>
+                </select>
+                <p class="block mb-2 text-sm font-medium">Предмет</p>
+                <input v-model="editableSubject.name" type="text" placeholder="Гипермедийные среды и технологии" class="text-sm rounded-lg block w-full p-2.5 bg-[#764462] placeholder-gray-400 border border-[#C69787] mb-1" />
+                <p class="block mb-2 text-sm font-medium">Тип занятия</p>
+                <!-- <input v-model="editableSubject.type" type="text" placeholder="Семинар" class="text-sm rounded-lg block w-full p-2.5 bg-[#764462] placeholder-gray-400 border border-[#C69787] mb-1" /> -->
+                <select v-model="editableSubject.type" class="p-2.5 text-sm cursor-pointer w-full rounded-lg bg-[#764462] hover:bg-[#EDB4A1] hover:text-[#2C2137] outline-none border border-[#C69787] mb-1">
+                    <option value="Лекции">Лекции</option>
+                    <option value="Cеминары">Cеминары</option>
+                    <option value="Лабораторные занятия">Лабораторные занятия</option>
+                </select>
+                <p class="block mb-2 text-sm font-medium">Кабинет</p>
+                <input v-model="editableSubject.location" type="text" placeholder="240(а)" class="text-sm rounded-lg block w-full p-2.5 bg-[#764462] placeholder-gray-400 border border-[#C69787] mb-1" />
+                <p class="block mb-2 text-sm font-medium">Даты</p>
+                <input v-model="editableSubject.dateStr" type="text" placeholder="[17.02, 03.03-24.03 к.н.]" class="text-sm rounded-lg block w-full p-2.5 bg-[#764462] placeholder-gray-400 border border-[#C69787] mb-1" />
+                <p class="block mb-2 text-sm font-medium">Время</p>
+                <!-- <input v-model="editableSubject.time" type="text" placeholder="0" class="text-sm rounded-lg block w-full p-2.5 bg-[#764462] placeholder-gray-400 border border-[#C69787] mb-1" /> -->
+                <select v-model="editableSubject.time" class="p-2.5 text-sm cursor-pointer w-full rounded-lg bg-[#764462] hover:bg-[#EDB4A1] hover:text-[#2C2137] outline-none border border-[#C69787] mb-1">
+                    <option value="0">8:30 - 10:10</option>
+                    <option value="1">10:20 - 12:00</option>
+                    <option value="2">12:20 - 14:00</option>
+                    <option value="3">14:10 - 15:50</option>
+                    <option value="4">16:00 - 17:40</option>
+                    <option value="5">18:00 - 19:30</option>
+                    <option value="6">19:40 - 21:10</option>
+                    <option value="7">21:20 - 22:50</option>
+                    <option value="8">8:30 - 12:00</option>
+                    <option value="9">10:20 - 14:00</option>
+                    <option value="10">12:20 - 15:50</option>
+                    <option value="11">14:10 - 17:40</option>
+                    <option value="12">16:00 - 19:30</option>
+                    <option value="13">18:00 - 21:10</option>
+                    <option value="14">19:40 - 22:50</option>
+                </select>
+            </div>
+            <my-button class="w-full" @click="saveSubject()">Сохранить изменения</my-button>
+        </div>
+        <my-button v-if="!beingEdited" class="w-full" @click="addSubject()">Добавить</my-button>
         </div>
       </div>
     </div>
