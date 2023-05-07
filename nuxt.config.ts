@@ -18,15 +18,15 @@ export default defineNuxtConfig({
     injectPosition: 0,
     viewer: true,
   },
-  publicRuntimeConfig:{
-    base:process.env.NODE_ENV == "production" ? "/Grad-Work-Alpha/": "/"
-  },
-  app: {
-    baseURL: process.env.NODE_ENV =="production" ? "/Grad-Work-Alpha": "/",
-    buildAssetsDir: "/nuxt/",
-    cdnURL:"/Grad-Work-Alpha"
-  },
-  router:{
-    base:process.env.NODE_ENV =="production" ? "/Grad-Work-Alpha/": "/"
-  }
+  // publicRuntimeConfig:{
+  //   base:process.env.NODE_ENV == "production" ? "/Grad-Work-Alpha/": "/"
+  // },
+  // app: {
+  //   baseURL: process.env.NODE_ENV =="production" ? "/Grad-Work-Alpha": "/",
+  //   buildAssetsDir: "/nuxt/",
+  //   cdnURL:"/Grad-Work-Alpha"
+  // },
+  // router:{
+  //   base:process.env.NODE_ENV =="production" ? "/Grad-Work-Alpha/": "/"
+  // }
 })
