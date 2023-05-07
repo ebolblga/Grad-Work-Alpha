@@ -97,7 +97,7 @@ function getToday() {
 <template>
     <div class="h-screen flex flex-col">
         <div class="h-[92vh] p-5 flex justify-center">
-            <div class="w-[75vw] max-w-[480px] flex flex-col my-auto">
+            <div class="w-[75vw] max-w-[480px] flex flex-col my-auto min-w-[360px]">
                 <DatePicker :attributes="attrs" expanded :first-day-of-week="2" :color="'orange'" locale="ru" is-dark borderless v-model="date" @click="getToday()" title-position="left" class="rounded-lg" />
                 <div class="overflow-auto h-[40vh] w-full scrollbar mt-3">
                     <div v-for="(item, i) in todaysList" class="w-full bg-[#F0BEAD] rounded-lg mb-3 p-3 overflow-hidden">

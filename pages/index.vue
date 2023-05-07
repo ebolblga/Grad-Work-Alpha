@@ -12,6 +12,8 @@ onMounted(async ()=>{
     }
 });
 
+const date = new Date();
+
 function profReg() {
     localStorage.setItem('language', "RU");
     localStorage.setItem('fontMultiplier', "1");
@@ -22,7 +24,7 @@ function profReg() {
     localStorage.setItem('user', "professor");
     localStorage.setItem('profName', "");
     localStorage.setItem('group', "");
-    localStorage.setItem('subjectsJSON', "[]");
+    localStorage.setItem('subjectsJSON', "[{\"groups\":[\"\"],\"name\":\"Вы не загрузили ни одного расписания\",\"type\":\"\",\"subgroup\":\"\",\"location\":\"\",\"dateStr\":\"\",\"dates\":[\"" + date.toISOString() + "\"],\"time\":0}]");
 
     navigateTo('/menu');
 }
@@ -37,7 +39,7 @@ function studentReg() {
     localStorage.setItem('user', "student");
     localStorage.setItem('profName', "");
     localStorage.setItem('group', "");
-    localStorage.setItem('subjectsJSON', "[]");
+    localStorage.setItem('subjectsJSON', "[{\"groups\":[\"\"],\"name\":\"Вы не загрузили ни одного расписания\",\"type\":\"\",\"subgroup\":\"\",\"location\":\"\",\"dateStr\":\"\",\"dates\":[\"" + date.toISOString() + "\"],\"time\":0}]");
 
     navigateTo('/menu');
 }
