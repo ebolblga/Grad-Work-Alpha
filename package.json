@@ -21,7 +21,6 @@
     "axios": "^1.2.6",
     "pdfjs-dist": "^3.5.141",
     "tesseract.js": "^4.0.5",
-    "v-calendar": "^3.0.3",
-    "vue-i18n": "9"
+    "v-calendar": "^3.0.3"
   }
 }
