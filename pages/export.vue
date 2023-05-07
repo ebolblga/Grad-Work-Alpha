@@ -73,7 +73,7 @@ function exportJSON() {
 <template>
     <div class="h-screen flex flex-col">
         <div class="h-[92vh] p-5 flex justify-center">
-            <div class="w-[40%] flex flex-col my-auto">
+            <div class="w-[40%] flex flex-col my-auto min-w-[360px]">
                 <my-button @click="exportICS()" class="mb-7 w-full">Экспортировать ICS</my-button>
                 <my-button @click="exportCSV()" class="mb-7 w-full">Экспортировать CSV</my-button>
                 <my-button @click="exportJSON()" class="mb-7 w-full">Экспортировать JSON</my-button>

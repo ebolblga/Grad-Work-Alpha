@@ -100,15 +100,15 @@ function getToday() {
             <div class="w-[75vw] max-w-[480px] flex flex-col my-auto">
                 <DatePicker :attributes="attrs" expanded :first-day-of-week="2" :color="'orange'" locale="ru" is-dark borderless v-model="date" @click="getToday()" title-position="left" class="rounded-lg" />
                 <div class="overflow-auto h-[40vh] w-full scrollbar mt-3">
-                    <div v-for="(item, i) in todaysList" class="w-full bg-[#764462] rounded-lg mb-3 p-3 overflow-hidden">
-                        <p class="text-sm text-[#C69787] inline">{{ item.groups }}</p>
-                        <p class="font-medium italic">{{ item.name }}</p>
-                        <p class="text-sm"
-                        :class="{ 'text-[#8CC487]': item.type.includes('Лекция'),
-                        'text-[#9b8fcf]': item.type.includes('Cеминар'),
-                        'text-[#ccc46f]': item.type.includes('Лабораторное занятие') }">{{ item.type }}</p>
-                        <p class="text-sm text-[#C69787] inline">{{ item.time }}</p>
-                        <p class="text-sm text-right text-[#C69787]">{{ item.location }}</p>
+                    <div v-for="(item, i) in todaysList" class="w-full bg-[#F0BEAD] rounded-lg mb-3 p-3 overflow-hidden">
+                        <p class="text-sm text-[#2C2137] inline">{{ item.groups }}</p>
+                        <p class="font-bold text-[#2C2137] italic">{{ item.name }}</p>
+                        <p class="text-sm font-semibold"
+                        :class="{ 'text-[#0D7211]': item.type.includes('Лекция'),
+                        'text-[#1962DA]': item.type.includes('Cеминар'),
+                        'text-[#8F5107]': item.type.includes('Лабораторное занятие') }">{{ item.type }}</p>
+                        <p class="text-sm text-[#2C2137] inline">{{ item.time }}</p>
+                        <p class="text-sm text-right text-[#2C2137]">{{ item.location }}</p>
                     </div>
                 </div>
             </div>

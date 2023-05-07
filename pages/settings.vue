@@ -25,15 +25,15 @@ function onSettingChange() {
     localStorage.setItem('profName', profName.value);
     localStorage.setItem('group', group.value);
 
-    console.log("\nLanguage:", language.value);
-    console.log("Font:", fontMultiplier.value);
-    console.log("Epilepsy:", epilepsyToggle.value);
-    console.log("Vision:", visuallyImpairedToggle.value);
-    console.log("Dyslexia:", dyslexiaToggle.value);
-    console.log("ADHD:", adhdToggle.value);
-    console.log("User:", user.value);
-    console.log("Professor:", profName.value);
-    console.log("Group:", group.value);
+    // console.log("\nLanguage:", language.value);
+    // console.log("Font:", fontMultiplier.value);
+    // console.log("Epilepsy:", epilepsyToggle.value);
+    // console.log("Vision:", visuallyImpairedToggle.value);
+    // console.log("Dyslexia:", dyslexiaToggle.value);
+    // console.log("ADHD:", adhdToggle.value);
+    // console.log("User:", user.value);
+    // console.log("Professor:", profName.value);
+    // console.log("Group:", group.value);
 }
 </script>
 <template>
@@ -77,16 +77,16 @@ function onSettingChange() {
                 <my-toggle v-model="epilepsyToggle" @change="onSettingChange()"
                     >Профиль для людей с эпилепсией</my-toggle
                 >
-                <p class="text-gray-300 text-xs pl-14 mb-5">Смягчает цвета</p>
+                <p class="text-gray-300 text-xs pl-14 mb-5">Мягкие цвета</p>
                 <my-toggle v-model="visuallyImpairedToggle" @change="onSettingChange()"
                     >Профиль для слабовидящих</my-toggle
                 >
-                <p class="text-gray-300 text-xs pl-14 mb-5">Увеличивает контраст</p>
+                <p class="text-gray-300 text-xs pl-14 mb-5">Увеличенный контраст</p>
                 <my-toggle v-model="dyslexiaToggle" @change="onSettingChange()"
                     >Профиль для людей с дислексией</my-toggle
                 >
                 <p class="text-gray-300 text-xs pl-14 mb-5">
-                    Меняет шрифт на более дружелюбный
+                    Дружелюбный шрифт
                 </p>
                 <my-toggle v-model="adhdToggle" @change="onSettingChange()"
                     >Профиль для людей с СДВГ</my-toggle
@@ -123,7 +123,7 @@ function onSettingChange() {
                         v-model="profName"
                         type="text"
                         id="first_name"
-                        class="text-sm rounded-lg block w-full p-2.5 bg-[#764462] placeholder-gray-400"
+                        class="text-sm rounded-lg block w-full p-2.5 bg-[#764462] placeholder-[#D19F92]"
                         @change="onSettingChange()"
                         placeholder="Коган Ю.Г."
                     />
@@ -136,7 +136,7 @@ function onSettingChange() {
                         v-model="group"
                         type="text"
                         id="first_name"
-                        class="text-sm rounded-lg block w-full p-2.5 bg-[#764462] placeholder-gray-400"
+                        class="text-sm rounded-lg block w-full p-2.5 bg-[#764462] placeholder-[#D19F92]"
                         @change="onSettingChange()"
                         placeholder="ИДБ-19-03(А)"
                     />

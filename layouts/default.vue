@@ -21,7 +21,6 @@ const dyslexiaToggle = ref(localStorage.getItem('dyslexiaToggle') === "true" || 
 const fontMultiplier = ref(Number(localStorage.getItem('fontMultiplier')) || 1);
 let selectedFont: string = dyslexiaToggle.value ? "OpenDyslexic" : "Montserrat";
 let fontSize = (16 * fontMultiplier.value).toString() + "px";
-console.log(selectedFont)
 </script>
 
 <template>

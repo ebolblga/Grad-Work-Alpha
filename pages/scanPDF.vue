@@ -324,64 +324,61 @@ function addSubject() {
 <template>
     <div class="h-screen flex flex-col">
         <div class="h-[92vh] p-5 flex justify-center">
-            <div class="w-[40%] flex flex-col my-auto">
+            <div class="w-[40%] flex flex-col my-auto min-w-[360px]">
                 <input
                     aria-label="Input for images to process"
-                    class="mb-5 h-7 block w-full text-sm text-gray-400 rounded-lg cursor-pointer focus:outline-none bg-[#764462] placeholder-gray-400"
+                    class="mb-5 h-6 block w-full text-sm text-[#2C2137] rounded-lg cursor-pointer focus:outline-none bg-[#F0BEAD] placeholder-[#D19F92]"
                     type="file"
                     accept=".pdf"
                     @change="pdfUploaded($event)"
                 />
                 <div class="overflow-auto overflow-x-hidden h-[75vh] w-full scrollbar">
-                    <div v-if="!beingEdited" v-for="(item, i) in subjectsArray" class="relative w-full bg-[#764462] rounded-lg mb-3 p-3 overflow-hidden">
-                        <p class="text-sm text-[#C69787] inline">{{ item.groups.join(", ") }}</p>
-                        <p class="text-sm text-[#C69787] inline">{{ ' ' + item.subgroup }}</p>
+                    <div v-if="!beingEdited" v-for="(item, i) in subjectsArray" class="relative w-full bg-[#F0BEAD] text-[#2C2137] rounded-lg mb-3 p-3 overflow-hidden">
+                        <p class="text-sm inline">{{ item.groups.join(", ") }}</p>
+                        <p class="text-sm inline">{{ ' ' + item.subgroup }}</p>
                         <div class="w-6 h-6 absolute right-12 top-3 cursor-pointer" @click="editSubject(item, i)">
-                            <svg class="fill-orange-400" height="24" viewBox="0 96 960 960" width="24">
-                                <path d="M189 875h30l435-438-30-30-435 438v30Zm604-480L667 270l22-22q26-27 64-27.5t64 24.5l16 17q22 21 19.5 48.5T831 357l-38 38Zm-41 41L245 943H120V817l506-505 126 124Zm-111-13-17-16 30 30-13-14Z"/>
+                            <svg class="fill-none stroke-[#2C2137]" height="24" viewBox="0 0 13 12" width="24">
+                                <path d="M5.51553 1.69322H1.71829C1.43055 1.69322 1.15459 1.80752 0.951129 2.01099C0.747666 2.21445 0.633362 2.4904 0.633362 2.77814V10.3726C0.633362 10.6604 0.747666 10.9363 0.951129 11.1398C1.15459 11.3433 1.43055 11.4576 1.71829 11.4576H9.31277C9.60051 11.4576 9.87647 11.3433 10.0799 11.1398C10.2834 10.9363 10.3977 10.6604 10.3977 10.3726V6.57539M9.584 0.879524C9.79981 0.663719 10.0925 0.54248 10.3977 0.54248C10.7029 0.54248 10.9956 0.663719 11.2114 0.879524C11.4272 1.09533 11.5484 1.38802 11.5484 1.69322C11.5484 1.99841 11.4272 2.29111 11.2114 2.50691L6.05799 7.66031L3.88814 8.20278L4.4306 6.03292L9.584 0.879524Z" stroke-width="1.08493" stroke-linecap="round" stroke-linejoin="round"/>
                             </svg>
                         </div>
                         <div class="w-6 h-6 absolute right-3 top-3 cursor-pointer" @click="deleteSubject(i)">
-                            <svg class="fill-red-400" height="24" viewBox="0 96 960 960" width="24">
-                                <path d="M253 957q-38.212 0-65.106-26.6Q161 903.8 161 866V314h-58v-91h228v-47h297v47h228v91h-58v552q0 37.175-27.206 64.088Q743.588 957 706 957H253Zm453-643H253v552h453V314ZM357 788h74V390h-74v398Zm173 0h75V390h-75v398ZM253 314v552-552Z"/>
+                            <svg class="fill-none stroke-[#2C2137]" height="24" viewBox="0 0 13 12" width="24">
+                                <path d="M0.636383 2.72723H1.72729M1.72729 2.72723H10.4546M1.72729 2.72723V10.3636C1.72729 10.6529 1.84223 10.9304 2.04681 11.135C2.2514 11.3396 2.52887 11.4545 2.8182 11.4545H8.27275C8.56207 11.4545 8.83955 11.3396 9.04414 11.135C9.24872 10.9304 9.36366 10.6529 9.36366 10.3636V2.72723M3.36366 2.72723V1.63632C3.36366 1.34699 3.47859 1.06952 3.68318 0.86493C3.88776 0.660345 4.16524 0.54541 4.45456 0.54541H6.63638C6.92571 0.54541 7.20319 0.660345 7.40777 0.86493C7.61236 1.06952 7.72729 1.34699 7.72729 1.63632V2.72723M4.45456 5.4545V8.72723M6.63638 5.4545V8.72723" stroke-width="1.09091" stroke-linecap="round" stroke-linejoin="round"/>
                             </svg>
                         </div>
-                        <p class="font-medium italic">{{ item.name }}</p>
-                        <p class="text-sm"
-                        :class="{ 'text-[#8CC487]': item.type.includes('Лекции'),
-                        'text-[#9b8fcf]': item.type.includes('Cеминары'),
-                        'text-[#ccc46f]': item.type.includes('Лабораторные занятия') }">{{ item.type }}</p>
-                        <p class="text-sm text-[#C69787] inline">{{ timeMap.get(item.time) }}</p>
-                        <p class="text-sm text-[#C69787] inline">{{ item.dateStr }}</p>
-                        <p class="text-sm text-right text-[#C69787]">{{ item.location }}</p>
+                        <p class="font-bold italic">{{ item.name }}</p>
+                        <p class="text-sm font-semibold"
+                            :class="{ 'text-[#0D7211]': item.type.includes('Лекции'),
+                            'text-[#1962DA]': item.type.includes('Cеминары'),
+                            'text-[#8F5107]': item.type.includes('Лабораторные занятия') }">{{ item.type }}</p>
+                        <p class="text-sm inline">{{ timeMap.get(item.time) }}</p>
+                        <p class="text-sm inline">{{ item.dateStr }}</p>
+                        <p class="text-sm text-right">{{ item.location }}</p>
                     </div>
-                    <div v-else class="overflow-x-hidden">
-                        <div class="w-full bg-[#764462] rounded-lg mb-3 p-3">
+                    <div v-else class="overflow-x-hidden text-[#2C2137] font-bold">
+                        <div class="w-full bg-[#F0BEAD] rounded-lg mb-3 p-3">
                             <p class="block mb-2 text-sm font-medium">Группы / преподаватель</p>
-                            <input v-model="editableSubject.groups[0]" type="text" placeholder="ИДБ-19-03" class="text-sm rounded-lg block w-full p-2.5 bg-[#764462] placeholder-gray-400 border border-[#C69787] mb-1" />
+                            <input v-model="editableSubject.groups[0]" type="text" placeholder="ИДБ-19-03" class="text-sm rounded-lg block w-full p-2.5 bg-[#F0BEAD] placeholder-[#D19F92] border border-[#C69787] mb-1" />
                             <p class="block mb-2 text-sm font-medium">Подгруппа</p>
-                            <!-- <input v-model="editableSubject.subgroup" type="text" placeholder="(А)" class="text-sm rounded-lg block w-full p-2.5 bg-[#764462] placeholder-gray-400 border border-[#C69787] mb-1" /> -->
-                            <select v-model="editableSubject.subgroup" class="p-2.5 text-sm cursor-pointer w-full rounded-lg bg-[#764462] hover:bg-[#EDB4A1] hover:text-[#2C2137] outline-none border border-[#C69787] mb-1">
+                            <select v-model="editableSubject.subgroup" class="p-2.5 text-sm cursor-pointer w-full rounded-lg bg-[#F0BEAD] hover:bg-[#EDB4A1] hover:text-[#2C2137] outline-none border border-[#C69787] mb-1">
                                 <option value=""></option>
                                 <option value="(А)">(А)</option>
                                 <option value="(Б)">(Б)</option>
                             </select>
                             <p class="block mb-2 text-sm font-medium">Предмет</p>
-                            <input v-model="editableSubject.name" type="text" placeholder="Гипермедийные среды и технологии" class="text-sm rounded-lg block w-full p-2.5 bg-[#764462] placeholder-gray-400 border border-[#C69787] mb-1" />
+                            <input v-model="editableSubject.name" type="text" placeholder="Гипермедийные среды и технологии" class="text-sm rounded-lg block w-full p-2.5 bg-[#F0BEAD] placeholder-[#D19F92] border border-[#C69787] mb-1" />
                             <p class="block mb-2 text-sm font-medium">Тип занятия</p>
-                            <!-- <input v-model="editableSubject.type" type="text" placeholder="Семинар" class="text-sm rounded-lg block w-full p-2.5 bg-[#764462] placeholder-gray-400 border border-[#C69787] mb-1" /> -->
-                            <select v-model="editableSubject.type" class="p-2.5 text-sm cursor-pointer w-full rounded-lg bg-[#764462] hover:bg-[#EDB4A1] hover:text-[#2C2137] outline-none border border-[#C69787] mb-1">
+                            <select v-model="editableSubject.type" class="p-2.5 text-sm cursor-pointer w-full rounded-lg bg-[#F0BEAD] hover:bg-[#EDB4A1] hover:text-[#2C2137] outline-none border border-[#C69787] mb-1">
                                 <option value="Лекции">Лекции</option>
                                 <option value="Cеминары">Cеминары</option>
                                 <option value="Лабораторные занятия">Лабораторные занятия</option>
                             </select>
                             <p class="block mb-2 text-sm font-medium">Кабинет</p>
-                            <input v-model="editableSubject.location" type="text" placeholder="240(а)" class="text-sm rounded-lg block w-full p-2.5 bg-[#764462] placeholder-gray-400 border border-[#C69787] mb-1" />
+                            <input v-model="editableSubject.location" type="text" placeholder="240(а)" class="text-sm rounded-lg block w-full p-2.5 bg-[#F0BEAD] placeholder-[#D19F92] border border-[#C69787] mb-1" />
                             <p class="block mb-2 text-sm font-medium">Даты</p>
-                            <input v-model="editableSubject.dateStr" type="text" placeholder="[17.02, 03.03-24.03 к.н.]" class="text-sm rounded-lg block w-full p-2.5 bg-[#764462] placeholder-gray-400 border border-[#C69787] mb-1" />
+                            <input v-model="editableSubject.dateStr" type="text" placeholder="[17.02, 03.03-24.03 к.н.]" class="text-sm rounded-lg block w-full p-2.5 bg-[#F0BEAD] placeholder-[#D19F92] border border-[#C69787] mb-1" />
                             <p class="block mb-2 text-sm font-medium">Время</p>
-                            <!-- <input v-model="editableSubject.time" type="text" placeholder="0" class="text-sm rounded-lg block w-full p-2.5 bg-[#764462] placeholder-gray-400 border border-[#C69787] mb-1" /> -->
-                            <select v-model="editableSubject.time" class="p-2.5 text-sm cursor-pointer w-full rounded-lg bg-[#764462] hover:bg-[#EDB4A1] hover:text-[#2C2137] outline-none border border-[#C69787] mb-1">
+                            <select v-model="editableSubject.time" class="p-2.5 text-sm cursor-pointer w-full rounded-lg bg-[#F0BEAD] hover:bg-[#EDB4A1] hover:text-[#2C2137] outline-none border border-[#C69787] mb-1">
                                 <option value="0">8:30 - 10:10</option>
                                 <option value="1">10:20 - 12:00</option>
                                 <option value="2">12:20 - 14:00</option>
