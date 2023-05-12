@@ -8,7 +8,8 @@ export default defineNuxtConfig({
     },
   },
   modules: [
-    '@nuxtjs/tailwindcss'
+    '@nuxtjs/tailwindcss',
+    '@kevinmarrec/nuxt-pwa'
   ],
   tailwindcss: {
     cssPath: '~/assets/css/tailwind.css',
@@ -18,6 +19,11 @@ export default defineNuxtConfig({
     injectPosition: 0,
     viewer: true,
   },
+  pwa: {
+    workbox: {
+      enabled: true
+    }
+  }
   // publicRuntimeConfig:{
   //   base:process.env.NODE_ENV == "production" ? "/Grad-Work-Alpha/": "/"
   // },
