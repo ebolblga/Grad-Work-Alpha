@@ -27,6 +27,7 @@ class Subject {
 
 const src = ref(""); // DataURL of processed image
 let inputUrl = ""; // DataURL of uploaded image
+const user = localStorage.getItem('user') || "professor";
 const subjectsArray = ref<Subject[]>([]);
 const beingEdited = ref(false);
 const editableSubject = ref<Subject>(new Subject([""], "", "", "", "", "", [""], 0));
@@ -147,7 +148,7 @@ async function Slicer(DataURL: string) {
     timedItems.push(await OCR(slices[i]));
   }
 
-  subjectsArray.value = parseSubjectDataIMG(timedItems, "student");
+  subjectsArray.value = parseSubjectDataIMG(timedItems, user);
 }
 
 async function OCR(img: HTMLCanvasElement) {
@@ -199,7 +200,7 @@ async function OCR2(DataURL: string) {
   }
   
   await worker.terminate();
-  subjectsArray.value = parseSubjectDataIMG(recognizedTxt, "student");
+  subjectsArray.value = parseSubjectDataIMG(recognizedTxt, user);
   localStorage.setItem('subjectsJSON', JSON.stringify(subjectsArray.value));
   return;
 }
@@ -400,13 +401,13 @@ function addSubject() {
           <div v-if="!beingEdited" v-for="(item, i) in subjectsArray" class="relative w-full bg-[#F0BEAD] text-[#2C2137] rounded-lg mb-3 p-3 overflow-hidden">
               <p class="text-sm inline">{{ item.groups.join(", ") }}</p>
               <p class="text-sm inline">{{ ' ' + item.subgroup }}</p>
-              <div class="w-6 h-6 absolute right-12 top-3 cursor-pointer" @click="editSubject(item, i)">
-                  <svg class="fill-none stroke-[#2C2137]" height="24" viewBox="0 0 13 12" width="24">
+              <div class="w-4 h-4 absolute right-10 top-3 cursor-pointer" @click="editSubject(item, i)">
+                  <svg class="fill-none stroke-[#2C2137]" height="18" viewBox="0 0 13 12" width="18">
                       <path d="M5.51553 1.69322H1.71829C1.43055 1.69322 1.15459 1.80752 0.951129 2.01099C0.747666 2.21445 0.633362 2.4904 0.633362 2.77814V10.3726C0.633362 10.6604 0.747666 10.9363 0.951129 11.1398C1.15459 11.3433 1.43055 11.4576 1.71829 11.4576H9.31277C9.60051 11.4576 9.87647 11.3433 10.0799 11.1398C10.2834 10.9363 10.3977 10.6604 10.3977 10.3726V6.57539M9.584 0.879524C9.79981 0.663719 10.0925 0.54248 10.3977 0.54248C10.7029 0.54248 10.9956 0.663719 11.2114 0.879524C11.4272 1.09533 11.5484 1.38802 11.5484 1.69322C11.5484 1.99841 11.4272 2.29111 11.2114 2.50691L6.05799 7.66031L3.88814 8.20278L4.4306 6.03292L9.584 0.879524Z" stroke-width="1.08493" stroke-linecap="round" stroke-linejoin="round"/>
                   </svg>
               </div>
-              <div class="w-6 h-6 absolute right-3 top-3 cursor-pointer" @click="deleteSubject(i)">
-                  <svg class="fill-none stroke-[#2C2137]" height="24" viewBox="0 0 13 12" width="24">
+              <div class="w-4 h-4 absolute right-3 top-3 cursor-pointer" @click="deleteSubject(i)">
+                  <svg class="fill-none stroke-[#2C2137]" height="18" viewBox="0 0 13 12" width="18">
                       <path d="M0.636383 2.72723H1.72729M1.72729 2.72723H10.4546M1.72729 2.72723V10.3636C1.72729 10.6529 1.84223 10.9304 2.04681 11.135C2.2514 11.3396 2.52887 11.4545 2.8182 11.4545H8.27275C8.56207 11.4545 8.83955 11.3396 9.04414 11.135C9.24872 10.9304 9.36366 10.6529 9.36366 10.3636V2.72723M3.36366 2.72723V1.63632C3.36366 1.34699 3.47859 1.06952 3.68318 0.86493C3.88776 0.660345 4.16524 0.54541 4.45456 0.54541H6.63638C6.92571 0.54541 7.20319 0.660345 7.40777 0.86493C7.61236 1.06952 7.72729 1.34699 7.72729 1.63632V2.72723M4.45456 5.4545V8.72723M6.63638 5.4545V8.72723" stroke-width="1.09091" stroke-linecap="round" stroke-linejoin="round"/>
                   </svg>
               </div>
@@ -462,7 +463,7 @@ function addSubject() {
             </div>
             <my-button class="w-full" @click="saveSubject()">Сохранить изменения</my-button>
         </div>
-        <my-button v-if="!beingEdited" class="w-full" @click="addSubject()">Добавить</my-button>
+        <my-button v-if="!beingEdited" class="w-full" @click="addSubject()">Добавить предмет</my-button>
         </div>
       </div>
     </div>

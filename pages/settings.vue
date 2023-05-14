@@ -1,12 +1,6 @@
 <script setup lang="ts">
-import VueFullscreen from 'vue-fullscreen';
-import screenfull from 'screenfull';
 import Navbar from "~/components/navbar.vue";
 useHead({ title: "Настройки" });
-
-// const fullscreenElement = ref(null);
-
-// Vue.use(VueFullscreen)
 
 const language = ref(localStorage.getItem('language') || "RU");
 const fontMultiplier = ref(Number(localStorage.getItem('fontMultiplier')) || 1);
@@ -19,14 +13,6 @@ const adhdToggle = ref(localStorage.getItem('adhdToggle') === "true" || false);
 const user = ref(localStorage.getItem('user') || "professor");
 const profName = ref(localStorage.getItem('profName') || "");
 const group = ref(localStorage.getItem('group') || "");
-
-// const fullScreen = ref(localStorage.getItem('fullScreen') === "true" || false);
-const fullScreen = ref(false);
-
-onMounted(async ()=> {
-    if (!screenfull.isEnabled) return;
-    fullScreen.value = screenfull.isFullscreen ? true : false;
-});
 
 function onSettingChange() {
     localStorage.setItem('language', language.value);
@@ -49,15 +35,6 @@ function onSettingChange() {
     // console.log("User:", user.value);
     // console.log("Professor:", profName.value);
     // console.log("Group:", group.value);
-}
-
-function toggleFullscreen() {
-    if (!screenfull.isEnabled) return;
-    if (!fullScreen.value) {
-        screenfull.exit();
-    } else {
-        screenfull.request();
-    }
 }
 </script>
 <template>
@@ -116,9 +93,6 @@ function toggleFullscreen() {
                     >Профиль для людей с СДВГ</my-toggle
                 >
                 <p class="text-gray-300 text-xs pl-14 mb-5">Меньше отвлекающих вещей</p>
-
-                <!-- <my-button @click="toggleFullscreen()">Полноэкранный режим</my-button> -->
-                <my-toggle v-model="fullScreen" @change="toggleFullscreen()">Полноэкранный режим</my-toggle>
 
                 <div class="w-full h-0 border border-[#764462] mb-7"></div>
 

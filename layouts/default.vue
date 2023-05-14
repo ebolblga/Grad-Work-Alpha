@@ -13,7 +13,7 @@ useHead({
       lang: 'ru'
     },
   meta: [
-    { name: 'description', content: 'Author: ebolblga, Calendar app' }
+    { name: 'STANKIN Schedule Manager', content: 'Author: ebolblga, Calendar app' }
   ],
 });
 

@@ -52,7 +52,7 @@ function studentReg() {
                 <p class="font-bold text-lg mb-8">Вы к нам в роли кого?</p>
                 <my-button @click="profReg()" class="mb-8 w-full">Я преподаватель</my-button>
                 <my-button @click="studentReg()" class="w-full">Я студент</my-button>
-                <img src="/stankin-logo.svg" class="mx-auto"/>
+                <img src="/stankin-logo.svg" alt="Stankin logo" class="mx-auto"/>
             </div>
         </div>
     </div>

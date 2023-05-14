@@ -13,24 +13,33 @@ export function parseSubjectDataIMG(subjects: string[], user: string) {
             const strArray: string[] = subjectArray[j].split('.');
             for (let k = 0; k < strArray.length; k++) {
                 if (strArray[k].includes('[')) {
-                    if (k < 5 || k > 6) {
-                        continue nextItem;
+                    if (user === "professor") {
+                        if (k < 4 || k > 5) {
+                            continue nextItem;
+                        } else {
+                            break;
+                        }
                     } else {
-                        break;
+                        if (k < 5 || k > 6) {
+                            continue nextItem;
+                        } else {
+                            break;
+                        }
                     }
                 }
             }
 
             try {
                 if (user === "professor") {
+                    
                     let n = 0;
-                    const groups = strArray[0].split(',');
+                    const groups = strArray[0].toUpperCase().split(',');
                     const name = capitalizeFirstLetter(strArray[1].replace(/^\s+|\s+$/g,''));
                     const type = strArray[2].replace(/\s+/g, '').replace("лекции", "Лекции").replace("семинар", "Cеминары").replace("лабораторныезанятия", "Лабораторные занятия");
                     let subgroup = "";
                     if (type.includes("Лабораторные занятия")) {
-                        if (strArray[3].includes("(А)") || strArray[3].includes("(Б)")) {
-                            subgroup = strArray[3];
+                        if (strArray[4].includes("а") || strArray[4].includes("б")) {
+                            subgroup = '(' + strArray[4].toUpperCase() + ')';
                             n++;
                         }
                     }
@@ -41,7 +50,9 @@ export function parseSubjectDataIMG(subjects: string[], user: string) {
                         dates += strArray[p] + '.';
                     }
 
-                    const subject = new Subject(groups, name, type, subgroup.replace(" ", ""), location, dates.slice(0, -1), parseDates(dates.slice(0, -1)), i);
+                    const dates2 = '[' + dates.slice(0, -1).replace(/\[|\]/g, '').replace(/^\s+|\s+$/g,'') + ']';
+
+                    const subject = new Subject(groups, name, type, subgroup.replace(" ", ""), location, dates2, parseDates(dates.slice(0, -1)), i);
                     subjectsArray.push(subject);
                 } else {
                     let n = 0;
@@ -132,7 +143,7 @@ function removeDoubles(subjectsArray: Subject[]) {
         flag = false;
     }
 
-    console.log(outputArray)
+    // console.log(outputArray)
     return outputArray;
 }
 

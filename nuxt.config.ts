@@ -22,6 +22,12 @@ export default defineNuxtConfig({
   pwa: {
     workbox: {
       enabled: true
+    },
+    manifest: {
+      name: 'STANKIN Schedule Manager',
+      short_name: 'Станкин Кал...',
+      lang: 'ru',
+      description: 'MSUT \"STANKIN\" schedule manager webapp by ebolblga'
     }
   }
   // publicRuntimeConfig:{

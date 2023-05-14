@@ -21,7 +21,6 @@
     "@techstark/opencv-js": "^4.7.0-release.1",
     "axios": "^1.2.6",
     "pdfjs-dist": "^3.5.141",
-    "screenfull": "^6.0.2",
     "tesseract.js": "^4.0.5",
     "v-calendar": "^3.0.3"
   }
