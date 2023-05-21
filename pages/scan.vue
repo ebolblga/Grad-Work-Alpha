@@ -40,33 +40,21 @@ const DOC_HEIGHT = 1203;  //1358
 
 // const worker = await createWorker();
 
-// Uploads image to DataURL
+// Загрузка изображения как DataURL
 async function UploadImg(event: Event) {
-  // const target = event.target as HTMLInputElement;
-  // const files: FileList | null = target.files;
-  // if (files) {
-  //   let reader = new FileReader();
-  //   reader.readAsDataURL(files[0]); // Read file as data url
-  //   reader.onload = (event) => {
-  //     // Called once readAsDataURL is completed
-  //     inputUrl = target.value;
-  //     Main();
-  //   };
-  // }
 
   if (event.target.files && event.target.files[0]) {
     let reader = new FileReader();
-    reader.readAsDataURL(event.target.files[0]); // Read file as data url
+    reader.readAsDataURL(event.target.files[0]); // Считать файл как url
     reader.onload = (event) => {
-      // Called once readAsDataURL is completed
+      // Вызывается когда readAsDataURL закончена
       inputUrl = event.target.result;
-      // Main();
-      // Slicer();
       FULLPROCESSING();
     };
   }
 }
 
+// Основная функция считывания расписания из изображения
 async function FULLPROCESSING() {
   const start = Date.now();
 
@@ -85,84 +73,21 @@ async function FULLPROCESSING() {
   const imgContext = imgCanvas.getContext("2d", { willReadFrequently: true });
   if (!imgContext) return;
   imgContext.drawImage(img, 0, 0, imgWidth, imgHeight);
-
+  // Получение байтов изображения
   let imageData = imgContext.getImageData(0, 0, imgWidth, imgHeight);
-
+  // Бинаризация
   binarizationWulff(imageData, imgWidth, imgHeight, 10, 0.2);
 
   imgContext.putImageData(imageData, 0, 0);
-  // src.value = imgCanvas.toDataURL();
-
+  // Выравнивание перспективы
   src.value = await fixPerspective(cv.imread(imgCanvas));
-  // findContours(cv.imread(imgCanvas));
-  // await Slicer(src.value);
+  // Оптическое распознавание текста
   await OCR2(src.value);
 
   console.log(Date.now() - start + " ms");
 }
 
-async function Slicer(DataURL: string) {
-  const slices: HTMLCanvasElement[] = [];
-  let img = new Image();
-  img.src = DataURL;
-  await new Promise((resolve) => {
-    img.onload = () => resolve(1);
-  });
-
-  const imgCanvas = document.createElement("canvas");
-  imgCanvas.width = DOC_WIDTH;
-  imgCanvas.height = DOC_HEIGHT;
-  const imgContext = imgCanvas.getContext("2d");
-  if (!imgContext) return;
-  imgContext.drawImage(img, 0, 0, img.width, img.height);
-
-
-  const imgData = imgContext.getImageData(0, 0, imgCanvas.width, imgCanvas.height);
-  // const sliceWidth = imgCanvas.width / 8;
-  const sliceWidth = 1888 / 8;
-
-  for (let i = 0; i < 8; i++) {
-    const sliceCanvas = document.createElement('canvas');
-    sliceCanvas.width = sliceWidth;
-    sliceCanvas.height = imgCanvas.height - 32;
-    const sliceCtx = sliceCanvas.getContext('2d');
-    if (!sliceCtx) return;
-    sliceCtx.putImageData(imgData, (-sliceWidth * i) - 32, -32);
-    slices.push(sliceCanvas);
-  }
-
-  for (let i = 0; i < 7; i++) {
-    const sliceCanvas = document.createElement('canvas');
-    sliceCanvas.width = sliceWidth * 2;
-    sliceCanvas.height = imgCanvas.height - 32;
-    const sliceCtx = sliceCanvas.getContext('2d');
-    if (!sliceCtx) return;
-    sliceCtx.putImageData(imgData, (-sliceWidth * i) - 32, -32);
-    slices.push(sliceCanvas);
-  }
-
-  // console.log(slices);
-  // src.value = slices[1];
-  let timedItems: string[] = [];
-  for (let i = 0; i < slices.length; i++) {
-    timedItems.push(await OCR(slices[i]));
-  }
-
-  subjectsArray.value = parseSubjectDataIMG(timedItems, user);
-}
-
-async function OCR(img: HTMLCanvasElement) {
-  await worker.loadLanguage('rus');
-  await worker.initialize('rus');
-  await worker.setParameters({
-    tessedit_char_whitelist: 'абвгдеёжзийклмнопрстуфхцчшщъыьэюяАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ0123456789[].-,() ',
-  });
-  const { data: { text } } = await worker.recognize(img);
-
-  // await worker.terminate();
-  return text;
-}
-
+// Функция считывания текста
 async function OCR2(DataURL: string) {
   let img = new Image();
   img.src = DataURL;
@@ -176,7 +101,7 @@ async function OCR2(DataURL: string) {
   const imgContext = imgCanvas.getContext("2d");
   if (!imgContext) return;
   imgContext.drawImage(img, 0, 0, img.width, img.height);
-
+  // Создание worker'a tesseract и его настройка
   let recognizedTxt: string[] = [];
   const sliceWidth = (DOC_WIDTH - 32) / 8;
   const worker = await createWorker();
@@ -185,13 +110,14 @@ async function OCR2(DataURL: string) {
   await worker.setParameters({
     tessedit_char_whitelist: 'абвгдеёжзийклмнопрстуфхцчшщъыьэюяАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ0123456789[].-,() ',
   });
+  // Проход по сегментам изображения и считывание текста
   for (let i = 0; i < 8; i++) {
     const { data: { text } } = await worker.recognize(img, {
       rectangle: { top: 32, left: (sliceWidth * i) + 32, width: sliceWidth, height: DOC_HEIGHT - 32 },
     });
     recognizedTxt.push(text);
   }
-
+  // Второй проход для считывания лаб. занятий
   for (let i = 0; i < 7; i++) {
     const { data: { text } } = await worker.recognize(img, {
       rectangle: { top: 32, left: (sliceWidth * i) + 32, width: sliceWidth * 2, height: DOC_HEIGHT - 32 },
@@ -200,21 +126,24 @@ async function OCR2(DataURL: string) {
   }
   
   await worker.terminate();
+  // Вызов парсера
   subjectsArray.value = parseSubjectDataIMG(recognizedTxt, user);
+  // Сохранения расписания
   localStorage.setItem('subjectsJSON', JSON.stringify(subjectsArray.value));
   return;
 }
 
+// Функция выравнивания перспективы
 async function fixPerspective(im: cv.Mat) {
+  // Получить точки углов таблицы
   const pts = getContoursPoints(im);
 
   if (pts) {
+    // Выровнять
     const transformedIm = getTransformedImage(im, pts);
     im.delete();
     let canvas = document.createElement("canvas");
     cv.imshow(canvas, transformedIm);
-    // src.value = canvas.toDataURL();
-    // console.log("Perspective fix done!", Date.now() - start);
     return canvas.toDataURL();
   } else {
     console.log("Perspective fix failed...");
@@ -224,6 +153,7 @@ async function fixPerspective(im: cv.Mat) {
   return "";
 }
 
+// Функция получения точек контура
 function getContoursPoints(im: cv.Mat) {
   // Image area
   const imRectArea = im.cols * im.rows;
@@ -236,7 +166,7 @@ function getContoursPoints(im: cv.Mat) {
   let threshold_im = new cv.Mat();
   cv.threshold(im_gray, threshold_im, THRESHOLD, 255, cv.THRESH_BINARY);
 
-  // Contours
+  // Контуры
   let contours = new cv.MatVector();
   let hierarchy = new cv.Mat();
   cv.findContours(
@@ -254,20 +184,19 @@ function getContoursPoints(im: cv.Mat) {
   for (let i = 0; i < Number(contours.size()); ++i) {
     let cnt = contours.get(i);
     const cntArea = cv.contourArea(cnt);
-    const maxRectScale = (cntArea / imRectArea) * 100; // How big is it compared to the original image (%)
+    const maxRectScale = (cntArea / imRectArea) * 100; // Размер контура относительно оригинального изображения (%)
 
     if (maxRectScale >= MIN_CONTOURS_SCALE && maxRectScale < 99) {
-      // Filter by ratio to original image
+      // Фильтр контуров
       if (cntArea > maxCntArea) {
-        // Keep larger
+        // Выбор самого большого
         let approx = new cv.Mat();
         const epsilon = 0.02 * cv.arcLength(cnt, true);
         cv.approxPolyDP(cnt, approx, epsilon, true);
-        // Add ratio check here later
         if (approx.size().height === 4) {
-          // Keep if it is a rectangle
+          // Сохранить если четырёхугольник
           maxCntArea = cntArea;
-          pts = approx; // Coordinates of the rectangle to be cut out (4 points)
+          pts = approx; // Координаты углов контура
         }
       }
     }
@@ -277,10 +206,7 @@ function getContoursPoints(im: cv.Mat) {
   im_gray.delete();
   threshold_im.delete();
   if (pts) {
-    // console.log(pts.data32S)
     pts.convertTo(pts, cv.CV_32FC2);
-    // console.log(pts.data32F[0])
-    // pts.data32F[0]
   } else {
     console.log("Rectangles not found")
   }
@@ -288,10 +214,9 @@ function getContoursPoints(im: cv.Mat) {
   return pts;
 }
 
+// Функция трансформации изображения
 function getTransformedImage(im: cv.Mat, fromPts: cv.Mat) {
   let transformedIm = new cv.Mat();
-  // const rows = im.rows;
-  // const cols = im.cols;
   const rows = DOC_HEIGHT;
   const cols = DOC_WIDTH;
   let dsize = new cv.Size(cols, rows);
@@ -306,8 +231,8 @@ function getTransformedImage(im: cv.Mat, fromPts: cv.Mat) {
     rows,
   ]);
   // console.log(fromPts.data32S);
-  const M = cv.getPerspectiveTransform(fromPts, toPts); // Matrix of transformations
-  cv.warpPerspective(im, transformedIm, M, dsize, 1);
+  const M = cv.getPerspectiveTransform(fromPts, toPts); // Матрица трансформации
+  cv.warpPerspective(im, transformedIm, M, dsize, 1); // Применение матрицы трансформации
 
   fromPts.delete();
   toPts.delete();

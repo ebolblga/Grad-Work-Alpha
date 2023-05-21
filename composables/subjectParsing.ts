@@ -1,13 +1,13 @@
 export function parseSubjectDataIMG(subjects: string[], user: string) {
+    // Создание массива объектов учебного занятия
     let subjectsArray: Subject[] = [];
     for (let i = 0; i < subjects.length; i++) {
-        // console.log(subjects[i]);
-        // const subjectArray: string[] = subjects[i].replace(/\n/g, ' ').replace(')', ']').replace('(', '[').split(/[\[\]]/);
+        // Корректировка ошибок оптического распознавания текста
         const subjectArray: string[] = errorCorrection(subjects[i]).split(']');
-        // console.log(subjectArray.join("#"));
 
         if (subjectArray.length <= 1) continue;
         
+        // Проверка кол-ва точек
         nextItem:
         for (let j = 0; j < subjectArray.length - 1; j++) {
             const strArray: string[] = subjectArray[j].split('.');
@@ -31,7 +31,7 @@ export function parseSubjectDataIMG(subjects: string[], user: string) {
 
             try {
                 if (user === "professor") {
-                    
+                    // Создание объекта одного учебного занятия для профессора
                     let n = 0;
                     const groups = strArray[0].toUpperCase().split(',');
                     const name = capitalizeFirstLetter(strArray[1].replace(/^\s+|\s+$/g,''));
@@ -55,6 +55,7 @@ export function parseSubjectDataIMG(subjects: string[], user: string) {
                     const subject = new Subject(groups, name, type, subgroup.replace(" ", ""), location, dates2, parseDates(dates.slice(0, -1)), i);
                     subjectsArray.push(subject);
                 } else {
+                    // Создание объекта одного учебного занятия для студента
                     let n = 0;
                     const groups = [capitalizeFirstLetter(strArray[1].replace(/^\s+|\s+$/g,''))
                                     .replace(/.$/, a => a[0].toUpperCase())
@@ -81,14 +82,11 @@ export function parseSubjectDataIMG(subjects: string[], user: string) {
                     subjectsArray.push(subject);
                 }
             } catch {
-                // console.log(strArray)
+                console.log(strArray)
             }
-
-            // console.log(subject);
         }
     }
-    
-    // console.log(subjectsArray.value);
+    // Удаление предметов, считаных дважды
     return removeDoubles(subjectsArray);
 }
 

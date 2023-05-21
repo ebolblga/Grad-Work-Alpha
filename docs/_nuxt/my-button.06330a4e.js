@@ -1,1 +1,0 @@
-import{Q as t,o,p as n,l as s}from"./entry.cd717712.js";const r={},c={type:"button",class:"h-[64px] px-7 mr-2 mb-2 rounded-lg focus:z-10 bg-[#F0BEAD] text-[#2C2137] hover:text-[#F0BEAD] hover:bg-[#191220] select-none font-bold"};function _(e,l){return o(),n("button",c,[s(e.$slots,"default")])}const p=t(r,[["render",_]]);export{p as _};

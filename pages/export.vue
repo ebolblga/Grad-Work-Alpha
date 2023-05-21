@@ -17,7 +17,44 @@ interface Subject {
 
 // Downloads subject data in ICS file format
 function exportICS() {
+    let dataStr = "BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//MSUT \"STANKIN\"//Schedule//RU\n\n";
 
+    for (let i = 0; i < subjectsArr.length; i++) {
+        for (let j = 0; j < subjectsArr[i].dates.length; j++) {
+            const type = subjectsArr[i].type.replace("Лекции", "Лекция").replace("Cеминары", "Cеминар").replace("Лабораторные занятия", "Лабораторное занятие");
+            const time: string = subjectsArr[i].type === "Лабораторные занятия" ? timeMap.get(subjectsArr[i].time + 8) : timeMap.get(subjectsArr[i].time);
+            const startEnd = time.split(" - ");
+            const date = subjectsArr[i].dates[j].split('T');
+            let start = new Date(date[0] + 'T' + startEnd[0]);
+            let end = new Date(date[0] + 'T' + startEnd[1]);
+
+            start.setHours(start.getHours() + 25);
+            end.setHours(end.getHours() + 25);
+
+            dataStr += `BEGIN:VEVENT
+UID:${i.toString() + j.toString()}
+DTSTART:${start.toISOString()}
+DTEND:${end.toISOString()}
+SUMMARY:${subjectsArr[i].name}
+DESCRIPTION:${type + ": " + subjectsArr[i].groups.join(", ") + ' ' + subjectsArr[i].subgroup}
+LOCATION:${subjectsArr[i].location}
+END:VEVENT\n\n`;
+        }
+    }
+
+    dataStr += "END:VCALENDAR";
+
+    const blob = new Blob([dataStr], { type: 'text/ics;charset=UTF-8' });
+  
+    const url = window.URL.createObjectURL(blob)
+  
+    const a = document.createElement('a')
+
+    a.setAttribute('href', url)
+  
+    a.setAttribute('download', 'schedule.ics');
+  
+    a.click();
 }
 
 // Downloads subject data in CSV file format
@@ -56,7 +93,7 @@ function exportCSV() {
   
     a.setAttribute('download', 'schedule.csv');
   
-    a.click()
+    a.click();
 }
 
 // Downloads subject data in JSON file format
