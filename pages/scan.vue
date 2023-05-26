@@ -38,6 +38,10 @@ const THRESHOLD = 128; // Monochrome threshold
 const DOC_WIDTH = 1920; // Same ratio as A4 paper
 const DOC_HEIGHT = 1203;  //1358
 
+const errorOutput = ref("");
+const progress = ref(0);
+const isBeingProcessed = ref(false);
+
 // const worker = await createWorker();
 
 // Загрузка изображения как DataURL
@@ -57,6 +61,7 @@ async function UploadImg(event: Event) {
 // Основная функция считывания расписания из изображения
 async function FULLPROCESSING() {
   const start = Date.now();
+  isBeingProcessed.value = true;
 
   const img = new Image();
   img.src = inputUrl;
@@ -82,8 +87,16 @@ async function FULLPROCESSING() {
   // Выравнивание перспективы
   src.value = await fixPerspective(cv.imread(imgCanvas));
   // Оптическое распознавание текста
+  if (!src.value) {
+    errorOutput.value = "Ошибка выравнивания перспективы.";
+    isBeingProcessed.value = false;
+    console.log(Date.now() - start + " ms");
+  }
+
+  progress.value += 25;
   await OCR2(src.value);
 
+  isBeingProcessed.value = false;
   console.log(Date.now() - start + " ms");
 }
 
@@ -116,6 +129,7 @@ async function OCR2(DataURL: string) {
       rectangle: { top: 32, left: (sliceWidth * i) + 32, width: sliceWidth, height: DOC_HEIGHT - 32 },
     });
     recognizedTxt.push(text);
+    progress.value += 5;
   }
   // Второй проход для считывания лаб. занятий
   for (let i = 0; i < 7; i++) {
@@ -123,6 +137,7 @@ async function OCR2(DataURL: string) {
       rectangle: { top: 32, left: (sliceWidth * i) + 32, width: sliceWidth * 2, height: DOC_HEIGHT - 32 },
     });
     recognizedTxt.push(text);
+    progress.value += 5;
   }
   
   await worker.terminate();
@@ -389,9 +404,18 @@ function addSubject() {
             <my-button class="w-full" @click="saveSubject()">Сохранить изменения</my-button>
         </div>
         <my-button v-if="!beingEdited" class="w-full" @click="addSubject()">Добавить предмет</my-button>
+        <p class="text-red-400 text-center">{{ errorOutput }}</p>
+        <div v-if="isBeingProcessed" class="w-full bg-[#191220] rounded-full">
+          <div class="bg-[#C9304F] text-xs font-medium text-[#F0BEAD] text-center p-0.5 leading-none rounded-full pbar">{{ progress + '%' }}</div>
+        </div>
         </div>
       </div>
     </div>
     <Navbar />
   </div>
 </template>
+<style>
+.pbar {
+  width: v-bind(progress + '%');
+}
+</style>

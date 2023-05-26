@@ -25,7 +25,7 @@ export default defineNuxtConfig({
     },
     manifest: {
       name: 'STANKIN Schedule Manager',
-      short_name: 'Станкин Кал...',
+      short_name: 'Станкин Календарь',
       lang: 'ru',
       description: 'MSUT \"STANKIN\" schedule manager webapp by ebolblga'
     }
