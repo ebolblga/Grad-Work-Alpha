@@ -24,6 +24,8 @@ function onSettingChange(forceUpdate = false) {
     localStorage.setItem('user', user.value);
     localStorage.setItem('profName', profName.value);
     localStorage.setItem('group', group.value);
+    const subgroup = /\(.\)/.exec(group.value);
+    localStorage.setItem('subgroup', subgroup === null ? "null" : subgroup.toString());
 
     if (forceUpdate) location.reload();
 }
@@ -130,7 +132,7 @@ function onSettingChange(forceUpdate = false) {
                         id="first_name"
                         class="text-sm rounded-lg block w-full p-2.5 bg-[#764462] placeholder-[#D19F92]"
                         @change="onSettingChange()"
-                        placeholder="ИДБ-19-03(А)"
+                        placeholder="ИДБ-19-03 (А)"
                     />
                 </div>
             </div>

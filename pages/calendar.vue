@@ -4,6 +4,7 @@ import 'v-calendar/style.css';
 import Navbar from "~/components/navbar.vue";
 useHead({ title: "Календарь занятий" });
 
+const subgroup = ref(localStorage.getItem('subgroup') || "null");
 const date = ref(new Date());
 const attrs = ref<Event[]>([]);
 const subjectsArr: Subject[] = JSON.parse(localStorage.getItem('subjectsJSON') || "");
@@ -57,6 +58,15 @@ function populateCalendar() {
                 break;
         }
 
+        if (subgroup.value != 'null') {
+            if (subjectsArr[i].subgroup) {
+                if (subjectsArr[i].subgroup != subgroup.value) {
+                    // color = 'gray';
+                    continue;
+                }
+            }
+        }
+
         for (let j = 0; j < subjectsArr[i].dates.length; j++) {     
             eventArray.push({ key: i.toString() + j.toString(), dot: color, dates: new Date(subjectsArr[i].dates[j]) });
         }
@@ -100,7 +110,9 @@ function getToday() {
             <div class="w-[75vw] max-w-[480px] flex flex-col my-auto min-w-[360px]">
                 <DatePicker :attributes="attrs" expanded :first-day-of-week="2" :color="'orange'" locale="ru" is-dark borderless v-model="date" @click="getToday()" title-position="left" class="rounded-lg" />
                 <div class="overflow-auto h-[40vh] w-full scrollbar mt-3">
-                    <div v-for="(item, i) in todaysList" class="w-full bg-[#F0BEAD] rounded-lg mb-3 p-3 overflow-hidden">
+                    <div v-for="(item, i) in todaysList" class="w-full bg-[#F0BEAD] rounded-lg mb-3 p-3 overflow-hidden"
+                    :class="{'brightness-75' : !item.groups.includes( subgroup ) && item.groups.includes( '(' ) }"
+                    >
                         <p class="text-sm text-[#2C2137] inline">{{ item.groups }}</p>
                         <p class="font-bold text-[#2C2137] italic">{{ item.name }}</p>
                         <p class="text-sm font-semibold"
@@ -108,7 +120,7 @@ function getToday() {
                         'text-[#1962DA]': item.type.includes('Cеминар'),
                         'text-[#8F5107]': item.type.includes('Лабораторное занятие') }">{{ item.type }}</p>
                         <p class="text-sm text-[#2C2137] inline">{{ item.time }}</p>
-                        <p class="text-sm text-right text-[#2C2137]">{{ item.location }}</p>
+                        <p class="text-sm text-right text-[#2C2137]">{{ item.location === '' ? "Онлайн" : item.location }}</p>
                     </div>
                 </div>
             </div>
