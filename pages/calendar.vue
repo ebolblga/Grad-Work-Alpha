@@ -29,6 +29,7 @@ interface Subject {
 
 interface displaySubject {
     groups: string;
+    subgroup: string;
     name: string;
     type: string;
     location: string;
@@ -92,7 +93,8 @@ function getToday() {
             if (searchDay.toLocaleDateString() === indexedDay.toLocaleDateString()) {
                 const time: string = subjectsArr[i].type === "Лабораторные занятия" ? timeMap.get(subjectsArr[i].time + 8) : timeMap.get(subjectsArr[i].time);
                 todaysList.value.push({
-                    groups: subjectsArr[i].groups.join(", ") + " " + subjectsArr[i].subgroup,
+                    groups: subjectsArr[i].groups.join(", "),
+                    subgroup: subjectsArr[i].subgroup,
                     name: subjectsArr[i].name,
                     type: subjectsArr[i].type.replace("Лекции", "Лекция").replace("Cеминары", "Cеминар").replace("Лабораторные занятия", "Лабораторное занятие"),
                     location: subjectsArr[i].location,
@@ -104,7 +106,8 @@ function getToday() {
         }
     }
 
-    // todaysList.value.sort((a, b) => a.time - b.time);
+    // todaysList.value.sort((a, b) => a.subgroup > b.subgroup ? 1 : -1);
+    // todaysList.value.sort((a, b) => +a.time - +b.time);
 }
 </script>
 <template>
@@ -114,8 +117,8 @@ function getToday() {
                 <DatePicker :attributes="attrs" expanded :first-day-of-week="2" :color="'orange'" locale="ru" is-dark borderless v-model="date" @click="getToday()" title-position="left" class="rounded-lg" />
                 <div class="overflow-auto h-[40vh] w-full scrollbar mt-3">
                     <div v-for="(item, i) in todaysList" class="w-full bg-[#F0BEAD] rounded-lg mb-3 p-3 overflow-hidden"
-                    :class="{'brightness-75' : !item.groups.includes( subgroup ) && item.groups.includes( '(' ) }">
-                        <p class="text-sm text-[#2C2137] inline">{{ item.groups }}</p>
+                    :class="{'brightness-75' : subgroup != 'null' && item.subgroup != '' && item.subgroup != subgroup }">
+                        <p class="text-sm text-[#2C2137] inline">{{ item.groups + ' ' + item.subgroup }}</p>
                         <p class="font-bold text-[#2C2137] italic">{{ item.name }}</p>
                         <p class="text-sm font-semibold"
                         :class="{ 'text-[#0D7211]': item.type.includes('Лекция'),

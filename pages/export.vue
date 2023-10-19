@@ -100,8 +100,17 @@ function exportJSON() {
     downloadAnchorNode.remove();
 }
 
-function importJSON() {
-
+function importJSON(event: any) {
+    const file = event.target.files[0];
+    const fileReader = new FileReader();
+    fileReader.readAsText(file, "UTF-8");
+    fileReader.onload = () => {
+        const subjectsArray: Subject[] = JSON.parse(fileReader.result);
+        localStorage.setItem('subjectsJSON', JSON.stringify(subjectsArray));
+    }
+    fileReader.onerror = (error) => {
+        console.log(error);
+    }
 }
 </script>
 <template>
@@ -109,7 +118,12 @@ function importJSON() {
         <div class="h-[92vh] p-5 flex justify-center">
             <div class="w-[40%] flex flex-col my-auto min-w-[360px]">
 
-                <my-button @click="importJSON()" class="mb-14 w-full">[WIP] Импортировать JSON<Icon class="ml-5 my-auto" name="bi:filetype-json" size="18px" /></my-button>
+                <my-button class="mb-14 w-full">
+                    <label for="upload-file" class="cursor-pointer">Импортировать JSON
+                        <input type="file" id="upload-file" accept=".json" hidden @change="importJSON($event)"/>
+                    </label>
+                    <Icon class="ml-5 my-auto" name="bi:filetype-json" size="18px" />
+                </my-button>
 
                 <p class="text-lg font-black">
                     Экспорт расписания:
