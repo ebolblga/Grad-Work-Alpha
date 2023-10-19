@@ -5,7 +5,9 @@ onMounted(async ()=>{
     try {
         const user = localStorage.getItem('user');
         if (user === "professor" || user === "student") {
-            navigateTo('/menu');
+            const subjectsJSON = localStorage.getItem('subjectsJSON') || "";
+            if (subjectsJSON !== '') navigateTo('/calendar');
+            else navigateTo('/menu');
         }
     } catch {
         console.log("failed")

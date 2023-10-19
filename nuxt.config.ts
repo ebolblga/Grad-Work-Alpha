@@ -9,7 +9,8 @@ export default defineNuxtConfig({
   },
   modules: [
     '@nuxtjs/tailwindcss',
-    '@kevinmarrec/nuxt-pwa'
+    '@kevinmarrec/nuxt-pwa',
+    'nuxt-icon'
   ],
   tailwindcss: {
     cssPath: '~/assets/css/tailwind.css',

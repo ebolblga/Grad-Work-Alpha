@@ -24,8 +24,9 @@ class Subject {
     dateStr: string;
     dates: string[];
     time: number;
+    url: string;
 
-    constructor(groups: string[], name: string, type: string, subgroup: string, location: string, dateStr: string, dates: string[], time: number) {
+    constructor(groups: string[], name: string, type: string, subgroup: string, location: string, dateStr: string, dates: string[], time: number, url: string) {
         this.groups = groups;
         this.name = name;
         this.type = type;
@@ -34,6 +35,7 @@ class Subject {
         this.dateStr = dateStr;
         this.dates = dates;
         this.time = time;
+        this.url = url;
     }
 };
 
@@ -220,13 +222,16 @@ function parseSubjectData(subjects: string[]) {
                     }
                 }
                 
-                const location = strArray[n + 3].replace(" ", "");
+                let location = strArray[n + 3].replace(" ", "");
+                if (location === '') {
+                    location = 'Онлайн';
+                }
                 let dates = strArray[n + 4] + '.';
                 for (let p = n + 5; p < strArray.length; p++) {
                     dates += strArray[p] + '.';
                 }
 
-                const subject = new Subject(groups, name, type, subgroup.replace(" ", ""), location, dates.slice(0, -1), parseDates(dates.slice(0, -1)), i);
+                const subject = new Subject(groups, name, type, subgroup.replace(" ", ""), location, dates.slice(0, -1), parseDates(dates.slice(0, -1)), i, '');
                 subjectsArray.value.push(subject);
             } else {
                 // console.log(strArray)
@@ -242,13 +247,16 @@ function parseSubjectData(subjects: string[]) {
                     }
                 }
 
-                const location = strArray[n + 4].replace(" ", "");
+                let location = strArray[n + 4].replace(" ", "");
+                if (location === '') {
+                    location = 'Онлайн';
+                }
                 let dates = strArray[n + 5] + '.';
                 for (let p = n + 6; p < strArray.length; p++) {
                     dates += strArray[p] + '.';
                 }
 
-                const subject = new Subject(groups, name, type, subgroup.replace(" ", ""), location, dates.slice(0, -1), parseDates(dates.slice(0, -1)), i);
+                const subject = new Subject(groups, name, type, subgroup.replace(" ", ""), location, dates.slice(0, -1), parseDates(dates.slice(0, -1)), i, '');
                 subjectsArray.value.push(subject);
             }
 
@@ -318,7 +326,7 @@ function deleteSubject(id: number) {
 function addSubject() {
     beingEdited.value = true;
     editableSubjID = subjectsArray.value.length;
-    editableSubject.value = new Subject([""], "", "", "", "", "", [""], 0);
+    editableSubject.value = new Subject([""], "", "", "", "", "", [""], 0, '');
 }
 </script>
 <template>
@@ -375,6 +383,10 @@ function addSubject() {
                             </select>
                             <p class="block mb-2 text-sm font-medium">Кабинет</p>
                             <input v-model="editableSubject.location" type="text" placeholder="240(а)" class="text-sm rounded-lg block w-full p-2.5 bg-[#F0BEAD] placeholder-[#D19F92] border border-[#C69787] mb-1" />
+                            <div v-if="editableSubject.location === 'Онлайн'">
+                                <p class="block mb-2 text-sm font-medium">Ссылка</p>
+                                <input v-model="editableSubject.url" type="text" placeholder="https://us04web.zoom.us/j/" class="text-sm rounded-lg block w-full p-2.5 bg-[#F0BEAD] placeholder-[#D19F92] border border-[#C69787] mb-1" />
+                            </div>
                             <p class="block mb-2 text-sm font-medium">Даты</p>
                             <input v-model="editableSubject.dateStr" type="text" placeholder="[17.02, 03.03-24.03 к.н.]" class="text-sm rounded-lg block w-full p-2.5 bg-[#F0BEAD] placeholder-[#D19F92] border border-[#C69787] mb-1" />
                             <p class="block mb-2 text-sm font-medium">Время</p>

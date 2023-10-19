@@ -24,6 +24,7 @@ interface Subject {
     dateStr: string;
     dates: string[];
     time: number;
+    url: string;
 }
 
 interface displaySubject {
@@ -33,6 +34,7 @@ interface displaySubject {
     location: string;
     date: string;
     time: string;
+    url: string;
 }
 
 onMounted(async ()=>{
@@ -58,9 +60,9 @@ function populateCalendar() {
                 break;
         }
 
-        if (subgroup.value != 'null') {
+        if (subgroup.value !== 'null') {
             if (subjectsArr[i].subgroup) {
-                if (subjectsArr[i].subgroup != subgroup.value) {
+                if (subjectsArr[i].subgroup !== subgroup.value) {
                     // color = 'gray';
                     continue;
                 }
@@ -95,7 +97,8 @@ function getToday() {
                     type: subjectsArr[i].type.replace("Лекции", "Лекция").replace("Cеминары", "Cеминар").replace("Лабораторные занятия", "Лабораторное занятие"),
                     location: subjectsArr[i].location,
                     date: subjectsArr[i].dates[j],
-                    time: time
+                    time: time,
+                    url: subjectsArr[i].url
                 });
             }
         }
@@ -111,8 +114,7 @@ function getToday() {
                 <DatePicker :attributes="attrs" expanded :first-day-of-week="2" :color="'orange'" locale="ru" is-dark borderless v-model="date" @click="getToday()" title-position="left" class="rounded-lg" />
                 <div class="overflow-auto h-[40vh] w-full scrollbar mt-3">
                     <div v-for="(item, i) in todaysList" class="w-full bg-[#F0BEAD] rounded-lg mb-3 p-3 overflow-hidden"
-                    :class="{'brightness-75' : !item.groups.includes( subgroup ) && item.groups.includes( '(' ) }"
-                    >
+                    :class="{'brightness-75' : !item.groups.includes( subgroup ) && item.groups.includes( '(' ) }">
                         <p class="text-sm text-[#2C2137] inline">{{ item.groups }}</p>
                         <p class="font-bold text-[#2C2137] italic">{{ item.name }}</p>
                         <p class="text-sm font-semibold"
@@ -120,7 +122,8 @@ function getToday() {
                         'text-[#1962DA]': item.type.includes('Cеминар'),
                         'text-[#8F5107]': item.type.includes('Лабораторное занятие') }">{{ item.type }}</p>
                         <p class="text-sm text-[#2C2137] inline">{{ item.time }}</p>
-                        <p class="text-sm text-right text-[#2C2137]">{{ item.location === '' ? "Онлайн" : item.location }}</p>
+                        <p v-if="item.location === 'Онлайн' && item.url !== ''" class="text-right text-sm underline italic cursor-pointer text-blue-600"><a :href="item.url" target="_blank" rel="noopener noreferrer">{{ item.location }}</a></p>
+                        <p v-else class="text-sm text-right text-[#2C2137]">{{ item.location }}</p>
                     </div>
                 </div>
             </div>
