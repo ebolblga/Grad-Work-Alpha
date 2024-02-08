@@ -26,12 +26,14 @@ function exportICS() {
             const type = subjectsArr[i].type.replace("Лекции", "Лекция").replace("Cеминары", "Cеминар").replace("Лабораторные занятия", "Лабораторное занятие");
             const time: string = subjectsArr[i].type === "Лабораторные занятия" ? timeMap.get(subjectsArr[i].time + 8) : timeMap.get(subjectsArr[i].time);
             const startEnd = time.split(" - ");
+            console.log(subjectsArr[i].dates[j])
             const date = subjectsArr[i].dates[j].split('T');
-            let start = new Date(date[0] + 'T' + startEnd[0]);
-            let end = new Date(date[0] + 'T' + startEnd[1]);
+            console.log(date[0] + 'T' + startEnd[0] + ':00.000Z')
+            let start = new Date(date[0] + 'T' + startEnd[0] + ':00.000Z');
+            let end = new Date(date[0] + 'T' + startEnd[1] + ':00.000Z');
 
-            start.setHours(start.getHours() + 25);
-            end.setHours(end.getHours() + 25);
+            start.setHours(start.getHours() + 24);
+            end.setHours(end.getHours() + 24);
 
             dataStr += `BEGIN:VEVENT
 UID:${i.toString() + j.toString()}
@@ -91,7 +93,32 @@ function exportCSV() {
 
 // Downloads subject data in JSON file format
 function exportJSON() {
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(subjectsArr, null, "\t"));
+    const subjectsArr2: Subject[] = subjectsArr;
+    for (let i = 0; i < subjectsArr.length; i++) {
+        for (let j = 0; j < subjectsArr[i].dates.length; j++) {
+            subjectsArr2[i].type = subjectsArr[i].type.replace("Лекции", "Лекция").replace("Cеминары", "Cеминар").replace("Лабораторные занятия", "Лабораторное занятие");
+            const time: string = subjectsArr[i].type === "Лабораторные занятия" ? timeMap.get(subjectsArr[i].time + 8) : timeMap.get(subjectsArr[i].time);
+            const startEnd = time.split(" - ");
+            const date = subjectsArr[i].dates[j].split('T');
+            let start = new Date(date[0] + 'T' + startEnd[0] + ':00.000Z');
+            let end = new Date(date[0] + 'T' + startEnd[1] + ':00.000Z');
+
+            start.setHours(start.getHours() + 24);
+
+            subjectsArr[i].dates[j] = start.toISOString();
+
+            try {
+                subjectsArr[i].name = subjectsArr[i].name.trimStart();
+                subjectsArr[i].groups[j] = subjectsArr[i].groups[j].trimStart();
+                subjectsArr[i].dateStr = subjectsArr[i].dateStr.trimStart();
+            } catch (e) {
+                // console.log('Failed to trim spaces')
+            }
+            
+        }
+    }
+
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(subjectsArr2, null, "\t"));
     const downloadAnchorNode = document.createElement('a');
     downloadAnchorNode.setAttribute("href", dataStr);
     downloadAnchorNode.setAttribute("download", group.value != '' ? group.value + '.json' : 'schedule.json');
@@ -106,6 +133,11 @@ function importJSON(event: any) {
     fileReader.readAsText(file, "UTF-8");
     fileReader.onload = () => {
         const subjectsArray: Subject[] = JSON.parse(fileReader.result);
+
+        for (let i = 0; i < subjectsArray.length; i++) {
+            subjectsArray[i].type = subjectsArray[i].type.replace("Лекция", "Лекции").replace("Cеминар", "Cеминары").replace("Лабораторное занятие", "Лабораторные занятия");
+        }
+
         localStorage.setItem('subjectsJSON', JSON.stringify(subjectsArray));
     }
     fileReader.onerror = (error) => {
