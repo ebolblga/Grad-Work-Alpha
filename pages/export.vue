@@ -97,7 +97,11 @@ function exportJSON() {
     for (let i = 0; i < subjectsArr.length; i++) {
         for (let j = 0; j < subjectsArr[i].dates.length; j++) {
             subjectsArr2[i].type = subjectsArr[i].type.replace("Лекции", "Лекция").replace("Cеминары", "Cеминар").replace("Лабораторные занятия", "Лабораторное занятие");
+            if (subjectsArr[i].time >= 8) subjectsArr[i].time = subjectsArr[i].time - 8;
             const time: string = subjectsArr[i].type === "Лабораторные занятия" ? timeMap.get(subjectsArr[i].time + 8) : timeMap.get(subjectsArr[i].time);
+            console.log(subjectsArr2[i])
+            console.log(subjectsArr[i].time)
+            console.log(time)
             const startEnd = time.split(" - ");
             const date = subjectsArr[i].dates[j].split('T');
             let start = new Date(date[0] + 'T' + startEnd[0] + ':00.000Z');

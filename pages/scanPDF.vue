@@ -234,7 +234,6 @@ function parseSubjectData(subjects: string[]) {
                 const subject = new Subject(groups, name, type, subgroup.replace(" ", ""), location, dates.slice(0, -1), parseDates(dates.slice(0, -1)), i, '');
                 subjectsArray.value.push(subject);
             } else {
-                // console.log(strArray)
                 let n = 0;
                 const groups = [strArray[1] + '.' + strArray[2] + '.'];
                 const name = strArray[0];
@@ -256,8 +255,12 @@ function parseSubjectData(subjects: string[]) {
                     dates += strArray[p] + '.';
                 }
 
-                const subject = new Subject(groups, name, type, subgroup.replace(" ", ""), location, dates.slice(0, -1), parseDates(dates.slice(0, -1)), i, '');
-                subjectsArray.value.push(subject);
+                try {
+                    const subject = new Subject(groups, name, type, subgroup.replace(" ", ""), location, dates.slice(0, -1), parseDates(dates.slice(0, -1)), i, '');
+                    subjectsArray.value.push(subject);
+                } catch {
+                    console.log('failed to parse subject: ' + strArray);
+                }
             }
 
 
